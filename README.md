@@ -61,6 +61,11 @@ $ slack-status lunch
 ```
 
 ```
+$ slack-status -i
+🎵 Satellite Young - Sniper Rouge (feat. Mitch Murder)
+```
+
+```
 $ slack-status -i home
 🏠 Working remotely 🎵 Satellite Young - Sniper Rouge (feat. Mitch Murder)
 ```
