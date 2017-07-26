@@ -34,9 +34,11 @@ $ slack-status
 Usage: slack-status [options..] <template ID>
 
 Options:
+  -d  Dry run
   -i  Append information of the music playing on iTunes
+  -w  Watch changes (with -i)
 
 Templates:
-- home : :house: Working remotely
-- lunch : :fork_and_knife: Having lunch
+  - home : :house: Working remotely
+  - lunch : :fork_and_knife: Having lunch
 ```

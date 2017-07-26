@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"runtime"
 
+	"time"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -15,10 +17,11 @@ type StatusTemplate struct {
 }
 
 type SettingsRoot struct {
-	Token     string                    `yaml:"token"`
-	Templates map[string]StatusTemplate `yaml:"templates"`
-	PlayingEmoji string `yaml:"playing_emoji"`
-	PlayingText string `yaml:"playing_text"`
+	Token            string                    `yaml:"token"`
+	Templates        map[string]StatusTemplate `yaml:"templates"`
+	PlayingEmoji     string                    `yaml:"playing_emoji"`
+	PlayingText      string                    `yaml:"playing_text"`
+	WatchIntervalSec time.Duration             `yaml:"watch_interval_sec"`
 }
 
 var Settings SettingsRoot

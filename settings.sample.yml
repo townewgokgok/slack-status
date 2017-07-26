@@ -8,3 +8,4 @@ templates:
     text: Working remotely
 playing_emoji: musical_note
 playing_text: PLAYING
+watch_interval_sec: 3
