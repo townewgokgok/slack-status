@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 
 	"gopkg.in/yaml.v2"
+	"runtime"
+	"path/filepath"
 )
 
 type StatusTemplate struct {
@@ -19,7 +21,13 @@ type SettingsRoot struct {
 var Settings SettingsRoot
 
 func init() {
-	data, err := ioutil.ReadFile("settings.yml")
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		panic("Failed to detect settings file location")
+	}
+	path := filepath.Join(filepath.Dir(filepath.Dir(filename)), "settings.yml")
+
+	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic("Failed to load settings: " + err.Error())
 	}
