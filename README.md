@@ -13,8 +13,16 @@ $ go install github.com/townewgokgok/slack-status
 Your `token` can be created at [Slack "Legacy tokens" page](https://api.slack.com/custom-integrations/legacy-tokens).
 
 ```
+$ slack-status -e
+```
+
+or
+
+```
 $ vi $GOPATH/src/github.com/townewgokgok/slack-status/settings.yml
 ```
+
+then edit
 
 ```yaml
 token: xoxp-...
