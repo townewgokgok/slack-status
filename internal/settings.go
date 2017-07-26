@@ -16,12 +16,24 @@ type StatusTemplate struct {
 	Emoji string `yaml:"emoji,omitempty"`
 }
 
+type ITunesSettings struct {
+	WatchIntervalSec time.Duration `yaml:"watch_interval_sec"`
+}
+
+type LastFMSettings struct {
+	WatchIntervalSec time.Duration `yaml:"watch_interval_sec"`
+	UserName         string        `yaml:"user_name"`
+	APIKey           string        `yaml:"api_key"`
+	Secret           string        `yaml:"secret"`
+}
+
 type SettingsRoot struct {
-	Token            string                    `yaml:"token"`
-	Templates        map[string]StatusTemplate `yaml:"templates"`
-	PlayingEmoji     string                    `yaml:"playing_emoji"`
-	PlayingText      string                    `yaml:"playing_text"`
-	WatchIntervalSec time.Duration             `yaml:"watch_interval_sec"`
+	Token        string                    `yaml:"token"`
+	Templates    map[string]StatusTemplate `yaml:"templates"`
+	PlayingEmoji string                    `yaml:"playing_emoji"`
+	PlayingText  string                    `yaml:"playing_text"`
+	ITunes       ITunesSettings            `yaml:"itunes,omitempty"`
+	LastFM       LastFMSettings            `yaml:"lastfm,omitempty"`
 }
 
 var Settings SettingsRoot

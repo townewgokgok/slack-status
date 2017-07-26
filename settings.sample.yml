@@ -8,4 +8,10 @@ templates:
     text: Working remotely
 playing_emoji: musical_note
 playing_text: PLAYING
-watch_interval_sec: 3
+itunes:
+  watch_interval_sec: 3
+lastfm:
+  watch_interval_sec: 15
+  user_name: ...
+  api_key: ...
+  secret: ...

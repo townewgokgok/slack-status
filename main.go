@@ -28,6 +28,7 @@ func usage() {
 type Flags struct {
 	dryRun bool
 	iTunes bool
+	lastFM bool
 	watch  bool
 }
 
@@ -45,14 +46,32 @@ func main() {
 	var f Flags
 	flag.BoolVar(&f.dryRun, "d", false, "Dry run")
 	flag.BoolVar(&f.iTunes, "i", false, "Append information of the music playing on iTunes")
-	flag.BoolVar(&f.watch, "w", false, "Watch changes (with -i)")
+	flag.BoolVar(&f.lastFM, "l", false, "Append information of the music playing on last.fm")
+	flag.BoolVar(&f.watch, "w", false, "Watch changes (with -i or -l)")
 	flag.Parse()
 	id := flag.Arg(0)
-	if !f.iTunes {
+	withInfo := 0
+	interval := time.Duration(1)
+	if f.iTunes {
+		withInfo++
+		interval = s.ITunes.WatchIntervalSec
+	}
+	if f.lastFM {
+		withInfo++
+		interval = s.LastFM.WatchIntervalSec
+	}
+	if interval < 1 {
+		interval = 1
+	}
+	if 1 < withInfo {
+		fmt.Fprintln(os.Stderr, `Both -i and -l cannot be specified at the same time`)
+		fmt.Fprintln(os.Stderr, "")
+		usage()
+	}
+	if withInfo == 0 {
 		f.watch = false
 	}
-
-	if id == "" && !f.iTunes {
+	if id == "" && withInfo == 0 {
 		usage()
 	}
 
@@ -68,44 +87,54 @@ func main() {
 		e0 = wrapEmoji(tmpl.Emoji)
 	}
 
-	update(&f, t0, e0)
+	update(&f, e0, t0)
 
-	interval := s.WatchIntervalSec
-	if interval < 1 {
-		interval = 1
-	}
 	for f.watch {
 		time.Sleep(interval * time.Second)
-		update(&f, t0, e0)
+		update(&f, e0, t0)
 	}
+}
+
+func appendInfo(emoji, text, emojiToAppend, headerToAppend, textToAppend string) (string, string) {
+	if emojiToAppend != "" {
+		if emoji == "" {
+			emoji = wrapEmoji(emojiToAppend)
+		} else {
+			text += " " + wrapEmoji(emojiToAppend)
+		}
+	}
+	if headerToAppend != "" {
+		text += " " + headerToAppend
+	}
+	text += " " + textToAppend
+	if text[0] == ' ' {
+		text = text[1:]
+	}
+	return emoji, text
 }
 
 var lastText string
 var lastEmoji string
 var updatedCount int
 
-func update(f *Flags, t, e string) {
+func update(f *Flags, e, t string) {
 	if f.iTunes {
 		i := internal.GetITunesStatus()
 		if i.Valid {
-			if s.PlayingEmoji != "" {
-				if e == "" {
-					e = wrapEmoji(s.PlayingEmoji)
-				} else {
-					t += " " + wrapEmoji(s.PlayingEmoji)
-				}
-			}
-			if s.PlayingText != "" {
-				t += " " + s.PlayingText
-			}
-			t += " " + i.Artist + " - " + i.Name
-			if t[0] == ' ' {
-				t = t[1:]
-			}
+			e, t = appendInfo(e, t, s.PlayingEmoji, s.PlayingText, i.Artist+" - "+i.Name)
 		}
 	}
 
-	if updatedCount == 0 || !(t == lastText && e == lastEmoji) {
+	if f.lastFM {
+		l := internal.GetLastFMStatus()
+		if l.Valid {
+			e, t = appendInfo(e, t, s.PlayingEmoji, s.PlayingText, l.Artist+" - "+l.Name)
+		}
+	}
+
+	changed := updatedCount == 0 || !(t == lastText && e == lastEmoji)
+
+	if changed {
 		if !f.dryRun {
 			internal.SetSlackUserStatus(s.Token, t, e)
 		}

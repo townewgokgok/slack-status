@@ -36,7 +36,8 @@ Usage: slack-status [options..] <template ID>
 Options:
   -d  Dry run
   -i  Append information of the music playing on iTunes
-  -w  Watch changes (with -i)
+  -l  Append information of the music playing on last.fm
+  -w  Watch changes (with -i or -l)
 
 Templates:
   - home : :house: Working remotely
