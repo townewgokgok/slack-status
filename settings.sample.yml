@@ -6,3 +6,5 @@ templates:
   home:
     emoji: house
     text: Working remotely
+playing_emoji: musical_note
+playing_text: PLAYING

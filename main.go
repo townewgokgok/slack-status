@@ -61,16 +61,26 @@ func main() {
 	if f.iTunes {
 		st := internal.GetITunesStatus()
 		if st.Valid {
-			msg := "PLAYING " + st.Artist + " - " + st.Name
-			if e == "" {
-				e = ":musical_note:"
-			} else {
-				t += " :musical_note: "
+			if s.PlayingEmoji != "" {
+				if e == "" {
+					e = wrapEmoji(s.PlayingEmoji)
+				} else {
+					t += " " + wrapEmoji(s.PlayingEmoji)
+				}
 			}
-			t += msg
+			if s.PlayingText != "" {
+				t += " " + s.PlayingText
+			}
+			t += " " + st.Artist + " - " + st.Name
+			if t[0] == ' ' {
+				t = t[1:]
+			}
 		}
 	}
 
 	internal.SetSlackUserStatus(s.Token, t, e)
-	emoji.Println(e + " " + t)
+	if e != "" {
+		emoji.Print(e + " ")
+	}
+	emoji.Println(t)
 }

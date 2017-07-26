@@ -3,9 +3,10 @@ package internal
 import (
 	"io/ioutil"
 
-	"gopkg.in/yaml.v2"
-	"runtime"
 	"path/filepath"
+	"runtime"
+
+	"gopkg.in/yaml.v2"
 )
 
 type StatusTemplate struct {
@@ -16,6 +17,8 @@ type StatusTemplate struct {
 type SettingsRoot struct {
 	Token     string                    `yaml:"token"`
 	Templates map[string]StatusTemplate `yaml:"templates"`
+	PlayingEmoji string `yaml:"playing_emoji"`
+	PlayingText string `yaml:"playing_text"`
 }
 
 var Settings SettingsRoot
