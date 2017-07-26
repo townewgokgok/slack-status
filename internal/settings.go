@@ -8,6 +8,9 @@ import (
 
 	"time"
 
+	"os"
+	"os/exec"
+
 	"gopkg.in/yaml.v2"
 )
 
@@ -37,15 +40,30 @@ type SettingsRoot struct {
 }
 
 var Settings SettingsRoot
+var projectDir, settingsPath, settingsExamplePath string
 
 func init() {
 	_, filename, _, ok := runtime.Caller(0)
 	if !ok {
 		panic("Failed to detect settings file location")
 	}
-	path := filepath.Join(filepath.Dir(filepath.Dir(filename)), "settings.yml")
+	projectDir = filepath.Dir(filepath.Dir(filename))
+	settingsPath = filepath.Join(projectDir, "settings.yml")
+	settingsExamplePath = filepath.Join(projectDir, "settings.sample.yml")
 
-	data, err := ioutil.ReadFile(path)
+	_, err := os.Stat(settingsPath)
+	if err != nil {
+		b, err := ioutil.ReadFile(settingsExamplePath)
+		if err != nil {
+			panic(err)
+		}
+		err = ioutil.WriteFile(settingsPath, b, 0600)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	data, err := ioutil.ReadFile(settingsPath)
 	if err != nil {
 		panic("Failed to load settings: " + err.Error())
 	}
@@ -53,4 +71,16 @@ func init() {
 	if err != nil {
 		panic("Failed to unmarshall settings: " + err.Error())
 	}
+}
+
+func Edit() {
+	cmd := exec.Command("vi", settingsPath)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
+	err := cmd.Run()
+	if err != nil {
+		panic(err)
+	}
+	os.Exit(0)
 }

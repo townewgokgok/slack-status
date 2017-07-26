@@ -8,6 +8,8 @@ import (
 
 	"time"
 
+	"strings"
+
 	"github.com/kyokomi/emoji"
 	"github.com/townewgokgok/slack-status/internal"
 )
@@ -27,6 +29,7 @@ func usage() {
 
 type Flags struct {
 	dryRun bool
+	edit   bool
 	iTunes bool
 	lastFM bool
 	watch  bool
@@ -45,11 +48,22 @@ func main() {
 	// Parse arguments
 	var f Flags
 	flag.BoolVar(&f.dryRun, "d", false, "Dry run")
+	flag.BoolVar(&f.edit, "e", false, "Edit settings")
 	flag.BoolVar(&f.iTunes, "i", false, "Append information of the music playing on iTunes")
 	flag.BoolVar(&f.lastFM, "l", false, "Append information of the music playing on last.fm")
 	flag.BoolVar(&f.watch, "w", false, "Watch changes (with -i or -l)")
 	flag.Parse()
 	id := flag.Arg(0)
+
+	if f.edit {
+		internal.Edit()
+	}
+	if s.Token == "" || strings.ContainsRune(s.Token, '.') {
+		fmt.Fprintln(os.Stderr, `settings.yml seems to be not customized. Try "slack-status -e" to edit it.`)
+		fmt.Fprintln(os.Stderr, "")
+		usage()
+	}
+
 	withInfo := 0
 	interval := time.Duration(1)
 	if f.iTunes {

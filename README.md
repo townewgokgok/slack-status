@@ -39,6 +39,7 @@ Usage: slack-status [options..] <template ID>
 
 Options:
   -d  Dry run
+  -e  Edit settings
   -i  Append information of the music playing on iTunes
   -l  Append information of the music playing on last.fm
   -w  Watch changes (with -i or -l)
