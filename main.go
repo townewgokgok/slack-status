@@ -1,74 +1,76 @@
 package main
 
 import (
-	"io/ioutil"
-
 	"flag"
 	"fmt"
 
 	"os"
 
 	"github.com/kyokomi/emoji"
-	"github.com/nlopes/slack"
-	"gopkg.in/yaml.v2"
+	"github.com/townewgokgok/slack-status/internal"
 )
 
-type statusTemplate struct {
-	Text  string `yaml:"text,omitempty"`
-	Emoji string `yaml:"emoji,omitempty"`
-}
-
-type settings struct {
-	Token     string                    `yaml:"token"`
-	Templates map[string]statusTemplate `yaml:"templates"`
-}
-
-var s settings
-
 func usage() {
-	fmt.Fprintln(os.Stderr, "Usage: slack-status <template ID>")
+	fmt.Fprintln(os.Stderr, "Usage: slack-status [options..] <template ID>")
+	fmt.Fprintln(os.Stderr, "")
+	fmt.Fprintln(os.Stderr, "Options:")
 	flag.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "")
 	fmt.Fprintln(os.Stderr, "Templates:")
-	for id, tmpl := range s.Templates {
-		emoji.Fprintln(os.Stderr, "- "+id+" : :"+tmpl.Emoji+": "+tmpl.Text)
+	for id, tmpl := range internal.Settings.Templates {
+		emoji.Fprintln(os.Stderr, "  - "+id+" : "+wrapEmoji(tmpl.Emoji)+" "+tmpl.Text)
 	}
 	os.Exit(1)
 }
 
-func main() {
-	var err error
+type Flags struct {
+	iTunes bool
+}
 
-	// Load settings
-	data, err := ioutil.ReadFile("settings.yml")
-	if err != nil {
-		panic("Failed to load settings: " + err.Error())
+func wrapEmoji(e string) string {
+	if e == "" {
+		return e
 	}
-	err = yaml.Unmarshal(data, &s)
-	if err != nil {
-		panic("Failed to unmarshall settings: " + err.Error())
-	}
+	return ":" + e + ":"
+}
+
+func main() {
+	s := internal.Settings
 
 	// Parse arguments
+	var f Flags
+	flag.BoolVar(&f.iTunes, "i", false, "Append information of the music playing on iTunes")
 	flag.Parse()
 	id := flag.Arg(0)
-	if id == "" {
+	if id == "" && !f.iTunes {
 		usage()
 	}
 
-	tmpl, ok := s.Templates[id]
-	if !ok {
-		fmt.Fprintln(os.Stderr, `Template "`+id+`" is not defined in settings.yml`)
-		fmt.Fprintln(os.Stderr, "")
-		usage()
+	var t, e string
+	if id != "" {
+		tmpl, ok := s.Templates[id]
+		if !ok {
+			fmt.Fprintln(os.Stderr, `Template "`+id+`" is not defined in settings.yml`)
+			fmt.Fprintln(os.Stderr, "")
+			usage()
+		}
+		t = tmpl.Text
+		e = wrapEmoji(tmpl.Emoji)
 	}
 
-	// Request
-	api := slack.New(s.Token)
-	err = api.SetUserCustomStatus(tmpl.Text, ":" + tmpl.Emoji + ":")
-	if err != nil {
-		panic("Failed to change status: " + err.Error())
+	if f.iTunes {
+		st := internal.GetITunesStatus()
+		if st.Valid {
+			msg := "PLAYING " + st.Artist + " - " + st.Name
+			if e == "" {
+				e = ":musical_note:"
+			} else {
+				t += " :musical_note: "
+			}
+			t += msg
+		}
 	}
 
-	emoji.Println(":" + tmpl.Emoji + ": " + tmpl.Text)
+	internal.SetSlackUserStatus(s.Token, t, e)
+	emoji.Println(e + " " + t)
 }

@@ -4,16 +4,16 @@ Changes your Slack user custom status from CLI
 
 # Install
 
-```bash
-go install github.com/townewgokgok/slack-status
+```
+$ go install github.com/townewgokgok/slack-status
 ```
 
 # Customize your settings
 
 Your `token` can be created at [Slack "Legacy tokens" page](https://api.slack.com/custom-integrations/legacy-tokens).
 
-```bash
-vi $GOPATH/src/github.com/townewgokgok/slack-status/settings.yml
+```
+$ vi $GOPATH/src/github.com/townewgokgok/slack-status/settings.yml
 ```
 
 ```yaml
@@ -30,9 +30,13 @@ templates:
 # Usage
 
 ```
-Usage: slack-status <template ID>
+$ slack-status
+Usage: slack-status [options..] <template ID>
+
+Options:
+  -i  Append information of the music playing on iTunes
 
 Templates:
-- home : 🏡  Working remotely
-- lunch : 🍴  Having lunch
+- home : :house: Working remotely
+- lunch : :fork_and_knife: Having lunch
 ```
