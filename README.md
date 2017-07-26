@@ -25,6 +25,10 @@ templates:
   lunch:
     emoji: fork_and_knife
     text: Having lunch
+lastfm:
+  user_name: ...
+  api_key: ...
+  secret: ...
 ```
 
 # Usage
@@ -42,4 +46,28 @@ Options:
 Templates:
   - home : :house: Working remotely
   - lunch : :fork_and_knife: Having lunch
+```
+
+# Examples
+
+```
+$ slack-status home
+:house: Working remotely
+```
+
+```
+$ slack-status lunch
+:fork_and_knife: Having lunch
+```
+
+```
+$ slack-status -i home
+:house: Working remotely :musical_note: Satellite Young - Sniper Rouge (feat. Mitch Murder)
+```
+
+```
+$ slack-status -i -w home
+:house: Working remotely :musical_note: Satellite Young - Sniper Rouge (feat. Mitch Murder)
+:house: Working remotely :musical_note: Satellite Young - Break! Break! Tic! Tac!
+:house: Working remotely :musical_note: Satellite Young - Geeky Boyfriend
 ```
