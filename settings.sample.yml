@@ -1,0 +1,8 @@
+token: xoxp-...
+templates:
+  lunch:
+    emoji: fork_and_knife
+    text: Having lunch
+  home:
+    emoji: house
+    text: Working remotely
