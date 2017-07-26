@@ -44,30 +44,30 @@ Options:
   -w  Watch changes (with -i or -l)
 
 Templates:
-  - home : :house: Working remotely
-  - lunch : :fork_and_knife: Having lunch
+  - home : 🏠 Working remotely
+  - lunch : 🍴 Having lunch
 ```
 
 # Examples
 
 ```
 $ slack-status home
-:house: Working remotely
+🏠 Working remotely
 ```
 
 ```
 $ slack-status lunch
-:fork_and_knife: Having lunch
+🍴 Having lunch
 ```
 
 ```
 $ slack-status -i home
-:house: Working remotely :musical_note: Satellite Young - Sniper Rouge (feat. Mitch Murder)
+🏠 Working remotely 🎵 Satellite Young - Sniper Rouge (feat. Mitch Murder)
 ```
 
 ```
 $ slack-status -i -w home
-:house: Working remotely :musical_note: Satellite Young - Sniper Rouge (feat. Mitch Murder)
-:house: Working remotely :musical_note: Satellite Young - Break! Break! Tic! Tac!
-:house: Working remotely :musical_note: Satellite Young - Geeky Boyfriend
+🏠 Working remotely 🎵 Satellite Young - Sniper Rouge (feat. Mitch Murder)
+🏠 Working remotely 🎵 Satellite Young - Break! Break! Tic! Tac!
+🏠 Working remotely 🎵 Satellite Young - Geeky Boyfriend
 ```
