@@ -12,6 +12,7 @@ import (
 	"os/exec"
 
 	"gopkg.in/yaml.v2"
+	"bytes"
 )
 
 type StatusTemplate struct {
@@ -58,6 +59,9 @@ func init() {
 		if err != nil {
 			panic(err)
 		}
+		if runtime.GOOS == "windows" {
+			b = bytes.Replace(b, []byte("\x0A"), []byte("\x0D\x0A"), -1)
+		}
 		err = ioutil.WriteFile(settingsPath, b, 0600)
 		if err != nil {
 			panic(err)
@@ -75,10 +79,15 @@ func init() {
 }
 
 func Edit() {
-	cmd := exec.Command("vi", settingsPath)
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	cmd.Stdin = os.Stdin
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "/C", "start", "notepad", settingsPath)
+	} else {
+		cmd = exec.Command("vi", settingsPath)
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		cmd.Stdin = os.Stdin
+	}
 	err := cmd.Run()
 	if err != nil {
 		panic(err)
