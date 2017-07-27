@@ -1,6 +1,6 @@
 # slack-status
 
-Changes your Slack user custom status from CLI
+Changes your Slack user status from CLI
 
 # Install
 
@@ -10,17 +10,15 @@ $ go install github.com/townewgokgok/slack-status
 
 # Configure your settings
 
+Your settings file is saved at `$HOME/.slack-status.settings.yml`.
+
+Please
+
 ```
 $ slack-status -e
 ```
 
-or
-
-```
-$ vi $GOPATH/src/github.com/townewgokgok/slack-status/settings.yml
-```
-
-to edit your settings file like
+and edit it like
 
 ```yaml
 slack:
