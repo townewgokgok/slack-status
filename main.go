@@ -14,6 +14,7 @@ import (
 
 	"github.com/kyokomi/emoji"
 	"github.com/townewgokgok/slack-status/internal"
+	"github.com/fatih/color"
 )
 
 func usage() {
@@ -112,11 +113,11 @@ func main() {
 		e0 = wrapEmoji(tmpl.Emoji)
 	}
 
-	update(&f, e0, t0)
+	update(&f, e0, t0, f.watch)
 
 	for f.watch {
 		time.Sleep(interval * time.Second)
-		update(&f, e0, t0)
+		update(&f, e0, t0, f.watch)
 	}
 }
 
@@ -171,7 +172,11 @@ var lastText string
 var lastEmoji string
 var updatedCount int
 
-func update(f *Flags, e, t string) {
+var cyan = color.New(color.FgCyan)
+
+func update(f *Flags, e, t string, printTime bool) {
+	now := time.Now()
+
 	if f.iTunes {
 		e, t = appendMusicInfo(e, t, &s.ITunes.MusicSettings, &internal.GetITunesStatus().MusicStatus)
 	}
@@ -187,6 +192,9 @@ func update(f *Flags, e, t string) {
 	if changed {
 		if !f.dryRun {
 			internal.SetSlackUserStatus(t, e)
+		}
+		if printTime {
+			cyan.Print(now.Format("[15:04:05] "))
 		}
 		if e != "" {
 			emoji.Print(e + " ")
