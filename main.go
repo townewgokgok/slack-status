@@ -159,6 +159,14 @@ func appendMusicInfo(emoji, text string, settings *internal.MusicSettings, statu
 	return appendInfo(emoji, text, settings.Emoji, info)
 }
 
+func limitStringByLength(str string, maxlen int) string {
+	r := []rune(str)
+	if len(r) <= maxlen {
+		return str
+	}
+	return string(r[:maxlen-1]) + "…"
+}
+
 var lastText string
 var lastEmoji string
 var updatedCount int
@@ -171,6 +179,8 @@ func update(f *Flags, e, t string) {
 	if f.lastFM {
 		e, t = appendMusicInfo(e, t, &s.LastFM.MusicSettings, &internal.GetLastFMStatus().MusicStatus)
 	}
+
+	t = limitStringByLength(t, internal.SlackUserStatusMaxLength)
 
 	changed := updatedCount == 0 || !(t == lastText && e == lastEmoji)
 

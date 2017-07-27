@@ -8,11 +8,11 @@ slack:
 itunes:
   watch_interval_sec: 3
   emoji: musical_note
-  format: "PLAYING: %A - %a - %t"
+  format: '%A - %t (from "%a")'
 lastfm:
   watch_interval_sec: 15
   emoji: musical_note
-  format: "PLAYING: %A - %a - %t"
+  format: '%A - %t (from "%a")'
   user_name: ...
   api_key: ...
   secret: ...

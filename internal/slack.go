@@ -2,6 +2,8 @@ package internal
 
 import "github.com/nlopes/slack"
 
+const SlackUserStatusMaxLength = 100
+
 func SetSlackUserStatus(text, emoji string) {
 	api := slack.New(Settings.Slack.Token)
 	err := api.SetUserCustomStatus(text, emoji)
