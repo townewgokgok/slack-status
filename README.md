@@ -47,6 +47,7 @@ Options:
   -e  Edit settings
   -i  Append information of the music playing on iTunes
   -l  Append information of the music playing on last.fm
+  -v  View current status
   -w  Watch changes (with -i or -l)
 
 Templates:

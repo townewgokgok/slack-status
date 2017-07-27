@@ -34,6 +34,7 @@ type Flags struct {
 	edit   bool
 	iTunes bool
 	lastFM bool
+	view   bool
 	watch  bool
 }
 
@@ -53,6 +54,7 @@ func main() {
 	flag.BoolVar(&f.edit, "e", false, "Edit settings")
 	flag.BoolVar(&f.iTunes, "i", false, "Append information of the music playing on iTunes")
 	flag.BoolVar(&f.lastFM, "l", false, "Append information of the music playing on last.fm")
+	flag.BoolVar(&f.view, "v", false, "View current status")
 	flag.BoolVar(&f.watch, "w", false, "Watch changes (with -i or -l)")
 	flag.Parse()
 	id := flag.Arg(0)
@@ -64,6 +66,11 @@ func main() {
 		fmt.Fprintln(os.Stderr, `settings.yml seems to be not customized. Try "slack-status -e" to edit it.`)
 		fmt.Fprintln(os.Stderr, "")
 		usage()
+	}
+
+	if f.view {
+		emoji.Println(internal.GetSlackUserStatus())
+		os.Exit(0)
 	}
 
 	withInfo := 0
@@ -88,6 +95,8 @@ func main() {
 		f.watch = false
 	}
 	if id == "" && withInfo == 0 {
+		emoji.Fprintln(os.Stderr, "Current status: " + internal.GetSlackUserStatus())
+		fmt.Fprintln(os.Stderr, "")
 		usage()
 	}
 
@@ -167,7 +176,7 @@ func update(f *Flags, e, t string) {
 
 	if changed {
 		if !f.dryRun {
-			internal.SetSlackUserStatus(s.Slack.Token, t, e)
+			internal.SetSlackUserStatus(t, e)
 		}
 		if e != "" {
 			emoji.Print(e + " ")
