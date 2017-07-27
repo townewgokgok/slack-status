@@ -23,8 +23,10 @@ import (
 var cyan = color.New(color.FgCyan)
 var red = color.New(color.FgRed)
 
-func warn(msg string) {
-	red.Fprintln(os.Stderr, msg)
+func warn(msgs ...string) {
+	for _, msg := range msgs {
+		red.Fprintln(os.Stderr, msg)
+	}
 	fmt.Fprintln(os.Stderr, "")
 }
 
@@ -75,8 +77,8 @@ func main() {
 	var f Flags
 	flag.BoolVar(&f.dryRun, "d", false, "Dry run")
 	flag.BoolVar(&f.edit, "e", false, "Edit settings")
-	flag.BoolVar(&f.iTunes, "i", false, "Append information of the music playing on iTunes")
-	flag.BoolVar(&f.lastFM, "l", false, "Append information of the music playing on last.fm")
+	flag.BoolVar(&f.iTunes, "i", false, "Append information about the music playing on iTunes")
+	flag.BoolVar(&f.lastFM, "l", false, "Append information about the music playing on last.fm")
 	flag.BoolVar(&f.view, "v", false, "View current status")
 	flag.BoolVar(&f.watch, "w", false, "Watch changes (with -i or -l)")
 	flag.Parse()
@@ -86,7 +88,11 @@ func main() {
 		internal.Edit()
 	}
 	if s.Slack.Token == "" || strings.ContainsRune(s.Slack.Token, '.') {
-		warn(`settings.yml seems to be not customized. Try "slack-status -e" to edit it.`)
+		warn(
+			`Your settings file seems to be not configured correctly.`,
+			`The example settings file has been created at `+internal.SettingsPath,
+			`Try "slack-status -e" to edit it.`,
+		)
 		usage()
 	}
 

@@ -13,6 +13,7 @@ import (
 
 	"bytes"
 
+	"github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v2"
 )
 
@@ -43,7 +44,8 @@ var Settings struct {
 	Templates map[string]StatusTemplate `yaml:"templates"`
 }
 
-var projectDir, settingsPath, settingsExamplePath string
+var projectDir, settingsExamplePath string
+var SettingsPath string
 
 func init() {
 	_, filename, _, ok := runtime.Caller(0)
@@ -51,10 +53,14 @@ func init() {
 		panic("Failed to detect settings file location")
 	}
 	projectDir = filepath.Dir(filepath.Dir(filename))
-	settingsPath = filepath.Join(projectDir, "settings.yml")
+	homeDir, err := homedir.Dir()
+	if err != nil {
+		panic("Failed to detect your home directory")
+	}
 	settingsExamplePath = filepath.Join(projectDir, "settings.sample.yml")
+	SettingsPath = filepath.Join(homeDir, ".slack-status.settings.yml")
 
-	_, err := os.Stat(settingsPath)
+	_, err = os.Stat(SettingsPath)
 	if err != nil {
 		b, err := ioutil.ReadFile(settingsExamplePath)
 		if err != nil {
@@ -63,13 +69,13 @@ func init() {
 		if runtime.GOOS == "windows" {
 			b = bytes.Replace(b, []byte("\x0A"), []byte("\x0D\x0A"), -1)
 		}
-		err = ioutil.WriteFile(settingsPath, b, 0600)
+		err = ioutil.WriteFile(SettingsPath, b, 0600)
 		if err != nil {
 			panic(err)
 		}
 	}
 
-	data, err := ioutil.ReadFile(settingsPath)
+	data, err := ioutil.ReadFile(SettingsPath)
 	if err != nil {
 		panic("Failed to load settings: " + err.Error())
 	}
@@ -82,9 +88,9 @@ func init() {
 func Edit() {
 	var cmd *exec.Cmd
 	if runtime.GOOS == "windows" {
-		cmd = exec.Command("cmd", "/C", "start", "notepad", settingsPath)
+		cmd = exec.Command("cmd", "/C", "start", "notepad", SettingsPath)
 	} else {
-		cmd = exec.Command("vi", settingsPath)
+		cmd = exec.Command("vi", SettingsPath)
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 		cmd.Stdin = os.Stdin

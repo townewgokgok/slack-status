@@ -45,14 +45,14 @@ Usage: slack-status [options..] <template ID>
 Options:
   -d  Dry run
   -e  Edit settings
-  -i  Append information of the music playing on iTunes
-  -l  Append information of the music playing on last.fm
+  -i  Append information about the music playing on iTunes
+  -l  Append information about the music playing on last.fm
   -v  View current status
   -w  Watch changes (with -i or -l)
 
 Templates:
-  - home : 🏠 Working remotely
-  - lunch : 🍴 Having lunch
+  home  = 🏠 Working remotely
+  lunch = 🍴 Having lunch
 ```
 
 # Examples
@@ -69,17 +69,17 @@ $ slack-status lunch
 
 ```
 $ slack-status -i
-🎵 Satellite Young - Sniper Rouge (feat. Mitch Murder)
+🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
 ```
 
 ```
 $ slack-status -i home
-🏠 Working remotely 🎵 Satellite Young - Sniper Rouge (feat. Mitch Murder)
+🏠 Working remotely 🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
 ```
 
 ```
 $ slack-status -i -w home
-🏠 Working remotely 🎵 Satellite Young - Sniper Rouge (feat. Mitch Murder)
-🏠 Working remotely 🎵 Satellite Young - Break! Break! Tic! Tac!
-🏠 Working remotely 🎵 Satellite Young - Geeky Boyfriend
+[10:25:39] 🏠 Working remotely 🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
+[10:30:16] 🏠 Working remotely 🎵 Satellite Young - Geeky Boyfriend (from "Satellite Young")
+[10:33:51] 🏠 Working remotely 🎵 Satellite Young - AI Threnody (from "Satellite Young")
 ```
