@@ -3,6 +3,10 @@
 Changes your Slack user status from CLI.
 Your own templates can be managed by editting the settings file.
 
+# Requirements
+
+- [Go 1.8](https://golang.org/)
+
 # Install
 
 ```
