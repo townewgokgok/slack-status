@@ -11,8 +11,9 @@ import (
 	"os"
 	"os/exec"
 
-	"gopkg.in/yaml.v2"
 	"bytes"
+
+	"gopkg.in/yaml.v2"
 )
 
 type StatusTemplate struct {

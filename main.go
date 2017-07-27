@@ -12,20 +12,42 @@ import (
 
 	"regexp"
 
+	"sort"
+	"strconv"
+
 	"github.com/fatih/color"
 	"github.com/kyokomi/emoji"
 	"github.com/townewgokgok/slack-status/internal"
 )
 
+var cyan = color.New(color.FgCyan)
+var red = color.New(color.FgRed)
+
+func warn(msg string) {
+	red.Fprintln(os.Stderr, msg)
+	fmt.Fprintln(os.Stderr, "")
+}
+
 func usage() {
-	fmt.Fprintln(os.Stderr, "Usage: slack-status [options..] <template ID>")
+	fmt.Fprintln(os.Stderr, "Usage: slack-status [options..] [<template ID>]")
 	fmt.Fprintln(os.Stderr, "")
 	fmt.Fprintln(os.Stderr, "Options:")
 	flag.PrintDefaults()
 	fmt.Fprintln(os.Stderr, "")
 	fmt.Fprintln(os.Stderr, "Templates:")
-	for id, tmpl := range internal.Settings.Templates {
-		emoji.Fprintln(os.Stderr, "  - "+id+" : "+wrapEmoji(tmpl.Emoji)+" "+tmpl.Text)
+	maxlen := 0
+	ids := []string{}
+	for id := range internal.Settings.Templates {
+		if maxlen < len(id) {
+			maxlen = len(id)
+		}
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	for _, id := range ids {
+		tmpl := internal.Settings.Templates[id]
+		str := fmt.Sprintf("  %-"+strconv.Itoa(maxlen)+"s = %s %s", id, wrapEmoji(tmpl.Emoji), tmpl.Text)
+		emoji.Fprintln(os.Stderr, str)
 	}
 	os.Exit(1)
 }
@@ -64,8 +86,7 @@ func main() {
 		internal.Edit()
 	}
 	if s.Slack.Token == "" || strings.ContainsRune(s.Slack.Token, '.') {
-		fmt.Fprintln(os.Stderr, `settings.yml seems to be not customized. Try "slack-status -e" to edit it.`)
-		fmt.Fprintln(os.Stderr, "")
+		warn(`settings.yml seems to be not customized. Try "slack-status -e" to edit it.`)
 		usage()
 	}
 
@@ -88,16 +109,13 @@ func main() {
 		interval = 1
 	}
 	if 1 < withInfo {
-		fmt.Fprintln(os.Stderr, `Both -i and -l cannot be specified at the same time`)
-		fmt.Fprintln(os.Stderr, "")
+		warn(`Both -i and -l cannot be specified at the same time`)
 		usage()
 	}
 	if withInfo == 0 {
 		f.watch = false
 	}
 	if id == "" && withInfo == 0 {
-		emoji.Fprintln(os.Stderr, "Current status: "+internal.GetSlackUserStatus())
-		fmt.Fprintln(os.Stderr, "")
 		usage()
 	}
 
@@ -105,8 +123,7 @@ func main() {
 	if id != "" {
 		tmpl, ok := s.Templates[id]
 		if !ok {
-			fmt.Fprintln(os.Stderr, `Template "`+id+`" is not defined in settings.yml`)
-			fmt.Fprintln(os.Stderr, "")
+			warn(`Template "` + id + `" is not defined in settings.yml`)
 			usage()
 		}
 		t0 = tmpl.Text
@@ -168,9 +185,6 @@ func limitStringByLength(str string, maxlen int) string {
 var lastText string
 var lastEmoji string
 var updatedCount int
-
-var cyan = color.New(color.FgCyan)
-var red = color.New(color.FgRed)
 
 func update(f *Flags, e, t string, printTime bool) {
 	now := time.Now().Format("[15:04:05] ")

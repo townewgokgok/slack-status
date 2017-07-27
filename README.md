@@ -10,8 +10,6 @@ $ go install github.com/townewgokgok/slack-status
 
 # Configure your settings
 
-Your `token` can be created at [Slack "Legacy tokens" page](https://api.slack.com/custom-integrations/legacy-tokens).
-
 ```
 $ slack-status -e
 ```
@@ -22,7 +20,7 @@ or
 $ vi $GOPATH/src/github.com/townewgokgok/slack-status/settings.yml
 ```
 
-then edit
+to edit your settings file like
 
 ```yaml
 slack:
@@ -35,6 +33,8 @@ templates:
     emoji: fork_and_knife
     text: Having lunch
 ```
+
+Your `token` can be created at [Slack "Legacy tokens" page](https://api.slack.com/custom-integrations/legacy-tokens).
 
 # Usage
 
