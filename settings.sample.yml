@@ -1,4 +1,21 @@
-token: xoxp-...
+# format placeholders
+#   %A : Artist
+#   %a : Album
+#   %t : Title
+
+slack:
+  token: xoxp-...
+itunes:
+  watch_interval_sec: 3
+  emoji: musical_note
+  format: "PLAYING: %A - %a - %t"
+lastfm:
+  watch_interval_sec: 15
+  emoji: musical_note
+  format: "PLAYING: %A - %a - %t"
+  user_name: ...
+  api_key: ...
+  secret: ...
 templates:
   lunch:
     emoji: fork_and_knife
@@ -6,12 +23,3 @@ templates:
   home:
     emoji: house
     text: Working remotely
-playing_emoji: musical_note
-playing_text: PLAYING
-itunes:
-  watch_interval_sec: 3
-lastfm:
-  watch_interval_sec: 15
-  user_name: ...
-  api_key: ...
-  secret: ...

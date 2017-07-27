@@ -8,10 +8,8 @@ import (
 )
 
 type LastFMStatus struct {
-	Valid  bool
-	Artist string
-	Name   string
-	Date   time.Time
+	MusicStatus
+	Date time.Time
 }
 
 func GetLastFMStatus() *LastFMStatus {
@@ -29,9 +27,12 @@ func GetLastFMStatus() *LastFMStatus {
 	tr := tracks.Tracks[0]
 	uts, _ := strconv.ParseInt(tr.Date.Uts, 10, 64)
 	return &LastFMStatus{
-		Valid:  true,
-		Artist: tr.Artist.Name,
-		Name:   tr.Name,
-		Date:   time.Unix(uts, 0),
+		MusicStatus: MusicStatus{
+			Valid:  true,
+			Artist: tr.Artist.Name,
+			Album:  tr.Album.Name,
+			Title:  tr.Name,
+		},
+		Date: time.Unix(uts, 0),
 	}
 }

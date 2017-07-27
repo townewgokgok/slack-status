@@ -8,7 +8,7 @@ Changes your Slack user custom status from CLI
 $ go install github.com/townewgokgok/slack-status
 ```
 
-# Customize your settings
+# Configure your settings
 
 Your `token` can be created at [Slack "Legacy tokens" page](https://api.slack.com/custom-integrations/legacy-tokens).
 
@@ -25,7 +25,8 @@ $ vi $GOPATH/src/github.com/townewgokgok/slack-status/settings.yml
 then edit
 
 ```yaml
-token: xoxp-...
+slack:
+  token: xoxp-...
 templates:
   home:
     emoji: house
@@ -33,10 +34,6 @@ templates:
   lunch:
     emoji: fork_and_knife
     text: Having lunch
-lastfm:
-  user_name: ...
-  api_key: ...
-  secret: ...
 ```
 
 # Usage

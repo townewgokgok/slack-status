@@ -15,31 +15,32 @@ import (
 )
 
 type StatusTemplate struct {
-	Text  string `yaml:"text,omitempty"`
 	Emoji string `yaml:"emoji,omitempty"`
+	Text  string `yaml:"text,omitempty"`
 }
 
-type ITunesSettings struct {
+type MusicSettings struct {
 	WatchIntervalSec time.Duration `yaml:"watch_interval_sec"`
+	Emoji            string        `yaml:"emoji"`
+	Format           string        `yaml:"format"`
 }
 
-type LastFMSettings struct {
-	WatchIntervalSec time.Duration `yaml:"watch_interval_sec"`
-	UserName         string        `yaml:"user_name"`
-	APIKey           string        `yaml:"api_key"`
-	Secret           string        `yaml:"secret"`
+var Settings struct {
+	Slack struct {
+		Token string `yaml:"token"`
+	} `yaml:"slack"`
+	ITunes struct {
+		MusicSettings `yaml:",inline"`
+	} `yaml:"itunes,omitempty"`
+	LastFM struct {
+		MusicSettings `yaml:",inline"`
+		UserName      string `yaml:"user_name"`
+		APIKey        string `yaml:"api_key"`
+		Secret        string `yaml:"secret"`
+	} `yaml:"lastfm,omitempty"`
+	Templates map[string]StatusTemplate `yaml:"templates"`
 }
 
-type SettingsRoot struct {
-	Token        string                    `yaml:"token"`
-	Templates    map[string]StatusTemplate `yaml:"templates"`
-	PlayingEmoji string                    `yaml:"playing_emoji"`
-	PlayingText  string                    `yaml:"playing_text"`
-	ITunes       ITunesSettings            `yaml:"itunes,omitempty"`
-	LastFM       LastFMSettings            `yaml:"lastfm,omitempty"`
-}
-
-var Settings SettingsRoot
 var projectDir, settingsPath, settingsExamplePath string
 
 func init() {

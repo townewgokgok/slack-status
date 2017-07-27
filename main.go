@@ -10,6 +10,8 @@ import (
 
 	"strings"
 
+	"regexp"
+
 	"github.com/kyokomi/emoji"
 	"github.com/townewgokgok/slack-status/internal"
 )
@@ -58,7 +60,7 @@ func main() {
 	if f.edit {
 		internal.Edit()
 	}
-	if s.Token == "" || strings.ContainsRune(s.Token, '.') {
+	if s.Slack.Token == "" || strings.ContainsRune(s.Slack.Token, '.') {
 		fmt.Fprintln(os.Stderr, `settings.yml seems to be not customized. Try "slack-status -e" to edit it.`)
 		fmt.Fprintln(os.Stderr, "")
 		usage()
@@ -109,22 +111,43 @@ func main() {
 	}
 }
 
-func appendInfo(emoji, text, emojiToAppend, headerToAppend, textToAppend string) (string, string) {
+func appendInfo(emoji, text, emojiToAppend, textToAppend string) (string, string) {
 	if emojiToAppend != "" {
 		if emoji == "" {
 			emoji = wrapEmoji(emojiToAppend)
 		} else {
-			text += " " + wrapEmoji(emojiToAppend)
+			if text != "" {
+				text += " "
+			}
+			text += wrapEmoji(emojiToAppend)
 		}
 	}
-	if headerToAppend != "" {
-		text += " " + headerToAppend
+	if text != "" {
+		text += " "
 	}
-	text += " " + textToAppend
-	if text[0] == ' ' {
-		text = text[1:]
-	}
+	text += textToAppend
 	return emoji, text
+}
+
+func appendMusicInfo(emoji, text string, settings *internal.MusicSettings, status *internal.MusicStatus) (string, string) {
+	if !status.Valid {
+		return emoji, text
+	}
+	r := regexp.MustCompile(`%\w`)
+	info := r.ReplaceAllStringFunc(settings.Format, func(m string) string {
+		switch m[1] {
+		case 'A':
+			return status.Artist
+		case 'a':
+			return status.Album
+		case 't':
+			return status.Title
+		case '%':
+			return "%"
+		}
+		return m
+	})
+	return appendInfo(emoji, text, settings.Emoji, info)
 }
 
 var lastText string
@@ -133,24 +156,18 @@ var updatedCount int
 
 func update(f *Flags, e, t string) {
 	if f.iTunes {
-		i := internal.GetITunesStatus()
-		if i.Valid {
-			e, t = appendInfo(e, t, s.PlayingEmoji, s.PlayingText, i.Artist+" - "+i.Name)
-		}
+		e, t = appendMusicInfo(e, t, &s.ITunes.MusicSettings, &internal.GetITunesStatus().MusicStatus)
 	}
 
 	if f.lastFM {
-		l := internal.GetLastFMStatus()
-		if l.Valid {
-			e, t = appendInfo(e, t, s.PlayingEmoji, s.PlayingText, l.Artist+" - "+l.Name)
-		}
+		e, t = appendMusicInfo(e, t, &s.LastFM.MusicSettings, &internal.GetLastFMStatus().MusicStatus)
 	}
 
 	changed := updatedCount == 0 || !(t == lastText && e == lastEmoji)
 
 	if changed {
 		if !f.dryRun {
-			internal.SetSlackUserStatus(s.Token, t, e)
+			internal.SetSlackUserStatus(s.Slack.Token, t, e)
 		}
 		if e != "" {
 			emoji.Print(e + " ")
