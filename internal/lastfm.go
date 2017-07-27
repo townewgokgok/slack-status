@@ -19,7 +19,9 @@ func GetLastFMStatus() *LastFMStatus {
 		"user": s.UserName,
 	})
 	if err != nil {
-		panic(err)
+		return &LastFMStatus{
+			MusicStatus: MusicStatus{Err: err.Error()},
+		}
 	}
 	if len(tracks.Tracks) == 0 {
 		return &LastFMStatus{}
@@ -28,7 +30,7 @@ func GetLastFMStatus() *LastFMStatus {
 	uts, _ := strconv.ParseInt(tr.Date.Uts, 10, 64)
 	return &LastFMStatus{
 		MusicStatus: MusicStatus{
-			Valid:  true,
+			Ok:     true,
 			Artist: tr.Artist.Name,
 			Album:  tr.Album.Name,
 			Title:  tr.Name,

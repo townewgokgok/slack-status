@@ -39,7 +39,7 @@ func GetITunesStatus() *ITunesStatus {
 	values := strings.Split(string(tsv), "\t")
 	return &ITunesStatus{
 		MusicStatus: MusicStatus{
-			Valid:  true,
+			Ok:     true,
 			Artist: values[4],
 			Album:  values[5],
 			Title:  values[6],

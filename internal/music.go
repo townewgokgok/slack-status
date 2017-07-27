@@ -1,7 +1,8 @@
 package internal
 
 type MusicStatus struct {
-	Valid  bool
+	Ok     bool
+	Err    string
 	Artist string
 	Album  string
 	Title  string
