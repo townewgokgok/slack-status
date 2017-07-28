@@ -12,21 +12,14 @@ Your own templates can be managed by editting the settings file.
 # Install
 
 ```
-$ go get github.com/townewgokgok/slack-status
-$ go install github.com/townewgokgok/slack-status
+go get github.com/townewgokgok/slack-status
 ```
 
 # Configure your settings
 
 Your settings file will be saved at `$HOME/.slack-status.yml`.
 
-Please
-
-```
-$ slack-status -e
-```
-
-and edit it like
+`slack-status -e` to edit it like
 
 ```yaml
 slack:

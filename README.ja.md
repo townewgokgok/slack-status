@@ -12,19 +12,14 @@ SlackのユーザステータスをCLIから変更するツールです。
 # インストール
 
 ```
-$ go get github.com/townewgokgok/slack-status
-$ go install github.com/townewgokgok/slack-status
+go get github.com/townewgokgok/slack-status
 ```
 
 # 設定ファイルの編集
 
 設定ファイルは `$HOME/.slack-status.yml` に保存されます。
 
-```
-$ slack-status -e
-```
-
-と入力するとエディタが起動します。以下のように項目を編集してください。
+`slack-status -e` と入力するとエディタが起動します。以下のように項目を編集してください。
 
 ```yaml
 slack:
