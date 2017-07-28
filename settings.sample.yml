@@ -1,21 +1,7 @@
-# format placeholders
-#   %A : Artist
-#   %a : Album
-#   %t : Title
-
 slack:
+  # Your token can be created at https://api.slack.com/custom-integrations/legacy-tokens
   token: xoxp-...
-itunes:
-  watch_interval_sec: 3
-  emoji: musical_note
-  format: '%A - %t (from "%a")'
-lastfm:
-  watch_interval_sec: 15
-  emoji: musical_note
-  format: '%A - %t (from "%a")'
-  user_name: ...
-  api_key: ...
-  secret: ...
+
 templates:
   lunch:
     emoji: fork_and_knife
@@ -23,3 +9,24 @@ templates:
   home:
     emoji: house
     text: Working remotely
+
+# The settings after here are necessary to obtain music information.
+# You can leave them unchanged unless you use this feature.
+#
+# Format placeholders:
+#   %A : Artist
+#   %a : Album
+#   %t : Title
+
+itunes:
+  watch_interval_sec: 3
+  emoji: musical_note
+  format: '%A - %t (from "%a")'
+
+lastfm:
+  watch_interval_sec: 15
+  emoji: musical_note
+  format: '%A - %t (from "%a")'
+  user_name: ...
+  api_key: ...
+  secret: ...

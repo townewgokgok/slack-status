@@ -106,13 +106,18 @@ func main() {
 	if f.iTunes {
 		withInfo++
 		interval = s.ITunes.WatchIntervalSec
+		if interval < 1 {
+			warn(`itunes.watch_interval_sec must be >= 1`)
+			interval = 5
+		}
 	}
 	if f.lastFM {
 		withInfo++
 		interval = s.LastFM.WatchIntervalSec
-	}
-	if interval < 1 {
-		interval = 1
+		if interval < 15 {
+			warn(`lastfm.watch_interval_sec must be >= 15`)
+			interval = 15
+		}
 	}
 	if 1 < withInfo {
 		warn(`Both -i and -l cannot be specified at the same time`)
@@ -129,7 +134,7 @@ func main() {
 	if id != "" {
 		tmpl, ok := s.Templates[id]
 		if !ok {
-			warn(`Template "` + id + `" is not defined in settings.yml`)
+			warn(`Template "` + id + `" is not defined in settings file`)
 			usage()
 		}
 		t0 = tmpl.Text

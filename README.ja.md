@@ -1,32 +1,30 @@
-English | [日本語](README.ja.md)
+[English](README.md) | 日本語
 
 # slack-status
 
-Changes your Slack user status from CLI.
-Your own templates can be managed by editting the settings file.
+SlackのユーザステータスをCLIから変更するツールです。
+設定ファイルを編集することで、自分専用のテンプレートを管理することができます。
 
-# Requirements
+# 必要環境
 
 - [Go 1.8](https://golang.org/)
 
-# Install
+# インストール
 
 ```
 $ go get github.com/townewgokgok/slack-status
 $ go install github.com/townewgokgok/slack-status
 ```
 
-# Configure your settings
+# 設定ファイルの編集
 
-Your settings file will be saved at `$HOME/.slack-status.settings.yml`.
-
-Please
+設定ファイルは `$HOME/.slack-status.settings.yml` に保存されます。
 
 ```
 $ slack-status -e
 ```
 
-and edit it like
+と入力するとエディタが起動します。以下のように項目を編集してください。
 
 ```yaml
 slack:
@@ -35,15 +33,15 @@ slack:
 templates:
   home:
     emoji: house
-    text: Working remotely
+    text: 在宅作業中
   lunch:
     emoji: fork_and_knife
-    text: Having lunch
+    text: お昼ごはん中
 ```
 
-Your `token` can be created at [Slack "Legacy tokens" page](https://api.slack.com/custom-integrations/legacy-tokens).
+`token` は [Slackの "Legacy tokens" ページ](https://api.slack.com/custom-integrations/legacy-tokens) で発行することができます。
 
-# Usage
+# 使用方法
 
 ```
 $ slack-status
@@ -62,7 +60,7 @@ Templates:
   lunch = 🍴 Having lunch
 ```
 
-# Examples
+# 使用例
 
 ```
 $ slack-status home
