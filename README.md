@@ -2,7 +2,7 @@ English | [日本語](README.ja.md)
 
 # slack-status
 
-Changes your Slack user status from CLI.
+Updates your Slack user status from CLI.
 Your own templates can be managed by editting the settings file.
 
 # Requirements
@@ -19,7 +19,7 @@ go get github.com/townewgokgok/slack-status
 
 Your settings file will be saved at `$HOME/.slack-status.yml`.
 
-`slack-status -e` to edit it like
+`slack-status edit` to edit it like
 
 ```yaml
 slack:
@@ -38,47 +38,42 @@ Your `token` can be created at [Slack "Legacy tokens" page](https://api.slack.co
 
 # Usage
 
-```
-$ slack-status
-Usage: slack-status [options..] <template ID>
+`slack-status` can be used in subcommand style like `slack-status <command> ...`.
 
-Options:
-  -d  Dry run
-  -e  Edit settings
-  -i  Append information about the music playing on iTunes
-  -l  Append information about the music playing on last.fm
-  -v  View current status
-  -w  Watch changes (with -i or -l)
-
-Templates:
-  home  = 🏠 Working remotely
-  lunch = 🍴 Having lunch
-```
+- `slack-status edit` … Opens your settings file in the editor
+- `slack-status list` … Lists your templates
+- `slack-status get` … Shows your current status
+- `slack-status set [options...] [<template ID>]` … Updates your status
+  - `--dryrun`, `-d` … just print the composed status text (your status will be not changed)
+  - `--itunes`, `-i` … append information about the music playing on iTunes
+  - `--lastfm`, `-l` … append information about the music playing on last.fm
+  - `--watch`, `-w` … watch changes (with `-i` or `-l`)
+- `slack-status help [<command>]` … Shows a list of commands or help for one command
 
 # Examples
 
 ```
-$ slack-status home
+$ slack-status set home
 🏠 Working remotely
 ```
 
 ```
-$ slack-status lunch
+$ slack-status set lunch
 🍴 Having lunch
 ```
 
 ```
-$ slack-status -i
+$ slack-status set -i
 🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
 ```
 
 ```
-$ slack-status -i home
+$ slack-status set -i home
 🏠 Working remotely 🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
 ```
 
 ```
-$ slack-status -i -w home
+$ slack-status set -i -w home
 [10:25:39] 🏠 Working remotely 🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
 [10:30:16] 🏠 Working remotely 🎵 Satellite Young - Geeky Boyfriend (from "Satellite Young")
 [10:33:51] 🏠 Working remotely 🎵 Satellite Young - AI Threnody (from "Satellite Young")

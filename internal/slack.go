@@ -8,7 +8,7 @@ func SetSlackUserStatus(text, emoji string) {
 	api := slack.New(Settings.Slack.Token)
 	err := api.SetUserCustomStatus(text, emoji)
 	if err != nil {
-		panic("Failed to change status: " + err.Error())
+		panic("Failed to update status: " + err.Error())
 	}
 }
 

@@ -1,8 +1,9 @@
 package main
 
 import (
-	"flag"
 	"fmt"
+
+	"github.com/urfave/cli"
 
 	"os"
 
@@ -21,46 +22,14 @@ import (
 )
 
 var cyan = color.New(color.FgCyan)
+var yellow = color.New(color.FgYellow)
 var red = color.New(color.FgRed)
 
 func warn(msgs ...string) {
 	for _, msg := range msgs {
-		red.Fprintln(os.Stderr, msg)
+		yellow.Fprintln(os.Stderr, `[warning] `+msg)
 	}
 	fmt.Fprintln(os.Stderr, "")
-}
-
-func usage() {
-	fmt.Fprintln(os.Stderr, "Usage: slack-status [options..] [<template ID>]")
-	fmt.Fprintln(os.Stderr, "")
-	fmt.Fprintln(os.Stderr, "Options:")
-	flag.PrintDefaults()
-	fmt.Fprintln(os.Stderr, "")
-	fmt.Fprintln(os.Stderr, "Templates:")
-	maxlen := 0
-	ids := []string{}
-	for id := range internal.Settings.Templates {
-		if maxlen < len(id) {
-			maxlen = len(id)
-		}
-		ids = append(ids, id)
-	}
-	sort.Strings(ids)
-	for _, id := range ids {
-		tmpl := internal.Settings.Templates[id]
-		str := fmt.Sprintf("  %-"+strconv.Itoa(maxlen)+"s = %s %s", id, wrapEmoji(tmpl.Emoji), tmpl.Text)
-		emoji.Fprintln(os.Stderr, str)
-	}
-	os.Exit(1)
-}
-
-type Flags struct {
-	dryRun bool
-	edit   bool
-	iTunes bool
-	lastFM bool
-	view   bool
-	watch  bool
 }
 
 func wrapEmoji(e string) string {
@@ -70,83 +39,176 @@ func wrapEmoji(e string) string {
 	return ":" + e + ":"
 }
 
-var s = internal.Settings
+var settings = internal.Settings
+
+type Flags struct {
+	dryRun bool
+	iTunes bool
+	lastFM bool
+	watch  bool
+}
+
+var flags Flags
+
+func cliError(msgs ...string) *cli.ExitError {
+	return cli.NewExitError(red.Sprint(strings.Join(msgs, "\n")), 1)
+}
 
 func main() {
 	// Parse arguments
-	var f Flags
-	flag.BoolVar(&f.dryRun, "d", false, "Dry run")
-	flag.BoolVar(&f.edit, "e", false, "Edit settings")
-	flag.BoolVar(&f.iTunes, "i", false, "Append information about the music playing on iTunes")
-	flag.BoolVar(&f.lastFM, "l", false, "Append information about the music playing on last.fm")
-	flag.BoolVar(&f.view, "v", false, "View current status")
-	flag.BoolVar(&f.watch, "w", false, "Watch changes (with -i or -l)")
-	flag.Parse()
-	id := flag.Arg(0)
+	app := cli.NewApp()
+	app.Name = "slack-status"
+	app.Version = "1.0.0"
+	app.Usage = "Updates your Slack user status from CLI"
+	//app.Authors = []cli.Author{
+	//	{
+	//		Name:  "townewgokgok",
+	//		Email: "townewgokgok@gmail.com",
+	//	},
+	//}
+	app.HelpName = "slack-status"
 
-	if f.edit {
-		internal.Edit()
-	}
-	if s.Slack.Token == "" || strings.ContainsRune(s.Slack.Token, '.') {
-		warn(
-			`Your settings file seems to be not configured correctly.`,
-			`The example settings file has been created at `+internal.SettingsPath,
-			`Try "slack-status -e" to edit it.`,
-		)
-		usage()
+	app.Commands = []cli.Command{
+		{
+			Name:      "edit",
+			Aliases:   []string{"e"},
+			Usage:     "Opens your settings file in the editor",
+			ArgsUsage: " ",
+			Action: func(ctx *cli.Context) error {
+				internal.Edit()
+				return nil
+			},
+		},
+		{
+			Name:      "get",
+			Aliases:   []string{"g"},
+			Usage:     "Shows your current status",
+			ArgsUsage: " ",
+			Action: func(ctx *cli.Context) error {
+				emoji.Println(internal.GetSlackUserStatus())
+				return nil
+			},
+		},
+		{
+			Name:      "list",
+			Aliases:   []string{"l"},
+			Usage:     "Lists your templates",
+			ArgsUsage: " ",
+			Action: func(ctx *cli.Context) error {
+				maxlen := 0
+				ids := []string{}
+				for id := range internal.Settings.Templates {
+					if maxlen < len(id) {
+						maxlen = len(id)
+					}
+					ids = append(ids, id)
+				}
+				sort.Strings(ids)
+				for _, id := range ids {
+					tmpl := internal.Settings.Templates[id]
+					str := fmt.Sprintf("%-"+strconv.Itoa(maxlen)+"s = %s %s", id, wrapEmoji(tmpl.Emoji), tmpl.Text)
+					emoji.Fprintln(os.Stderr, str)
+				}
+				return nil
+			},
+		},
+		{
+			Name:      "set",
+			Aliases:   []string{"s"},
+			Usage:     "Updates your status",
+			ArgsUsage: "[<template ID>]",
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "dryrun, d",
+					Usage: "just print the composed status text (your status will be not changed)",
+				},
+				cli.BoolFlag{
+					Name:  "itunes, i",
+					Usage: "append information about the music playing on iTunes",
+				},
+				cli.BoolFlag{
+					Name:  "lastfm, l",
+					Usage: "append information about the music playing on last.fm",
+				},
+				cli.BoolFlag{
+					Name:  "watch, w",
+					Usage: "watch changes (with -i or -l)",
+				},
+			},
+			Action: func(ctx *cli.Context) error {
+				flags.dryRun = ctx.Bool("dryrun")
+				flags.iTunes = ctx.Bool("itunes")
+				flags.lastFM = ctx.Bool("lastfm")
+				flags.watch = ctx.Bool("watch")
+				id := ctx.Args().Get(0)
+
+				withInfo := 0
+				interval := time.Duration(1)
+				if flags.iTunes {
+					withInfo++
+					interval = settings.ITunes.WatchIntervalSec
+					if interval < 1 {
+						warn(`itunes.watch_interval_sec must be >= 1`)
+						interval = 5
+					}
+				}
+				if flags.lastFM {
+					withInfo++
+					interval = settings.LastFM.WatchIntervalSec
+					if interval < 15 {
+						warn(`lastfm.watch_interval_sec must be >= 15`)
+						interval = 15
+					}
+				}
+				if 1 < withInfo {
+					return cliError(`Both -i and -l cannot be specified at the same time.`)
+				}
+				if withInfo == 0 {
+					flags.watch = false
+				}
+				if id == "" && withInfo == 0 {
+					cli.ShowCommandHelp(ctx, "set")
+					os.Exit(1)
+				}
+
+				var t0, e0 string
+				if id != "" {
+					tmpl, ok := settings.Templates[id]
+					if !ok {
+						return cliError(
+							`Template "`+id+`" is not defined in settings file.`,
+							`Try "slack-status list" to list your templates.`,
+						)
+					}
+					t0 = tmpl.Text
+					e0 = wrapEmoji(tmpl.Emoji)
+				}
+
+				update(&flags, e0, t0)
+
+				for flags.watch {
+					time.Sleep(interval * time.Second)
+					update(&flags, e0, t0)
+				}
+
+				return nil
+			},
+		},
 	}
 
-	if f.view {
-		emoji.Println(internal.GetSlackUserStatus())
-		os.Exit(0)
-	}
-
-	withInfo := 0
-	interval := time.Duration(1)
-	if f.iTunes {
-		withInfo++
-		interval = s.ITunes.WatchIntervalSec
-		if interval < 1 {
-			warn(`itunes.watch_interval_sec must be >= 1`)
-			interval = 5
+	app.Action = func(ctx *cli.Context) error {
+		if settings.Slack.Token == "" || strings.ContainsRune(settings.Slack.Token, '.') {
+			return cliError(
+				`Your settings file seems to be not configured correctly.`,
+				`The example settings file has been created at `+internal.SettingsPath,
+				`Try "slack-status edit" to edit it.`,
+			)
 		}
-	}
-	if f.lastFM {
-		withInfo++
-		interval = s.LastFM.WatchIntervalSec
-		if interval < 15 {
-			warn(`lastfm.watch_interval_sec must be >= 15`)
-			interval = 15
-		}
-	}
-	if 1 < withInfo {
-		warn(`Both -i and -l cannot be specified at the same time`)
-		usage()
-	}
-	if withInfo == 0 {
-		f.watch = false
-	}
-	if id == "" && withInfo == 0 {
-		usage()
+		cli.ShowAppHelp(ctx)
+		return nil
 	}
 
-	var t0, e0 string
-	if id != "" {
-		tmpl, ok := s.Templates[id]
-		if !ok {
-			warn(`Template "` + id + `" is not defined in settings file`)
-			usage()
-		}
-		t0 = tmpl.Text
-		e0 = wrapEmoji(tmpl.Emoji)
-	}
-
-	update(&f, e0, t0, f.watch)
-
-	for f.watch {
-		time.Sleep(interval * time.Second)
-		update(&f, e0, t0, f.watch)
-	}
+	app.Run(os.Args)
 }
 
 func appendInfo(emoji, text, emojiToAppend, textToAppend string) (string, string) {
@@ -197,14 +259,14 @@ var lastText string
 var lastEmoji string
 var updatedCount int
 
-func update(f *Flags, e, t string, printTime bool) {
+func update(flags *Flags, e, t string) {
 	now := time.Now().Format("[15:04:05] ")
 	notice := ""
 
-	if f.iTunes {
+	if flags.iTunes {
 		status := &internal.GetITunesStatus().MusicStatus
 		if status.Ok {
-			e, t = appendMusicInfo(e, t, &s.ITunes.MusicSettings, status)
+			e, t = appendMusicInfo(e, t, &settings.ITunes.MusicSettings, status)
 		} else {
 			notice = "iTunes seems to be stopped"
 			if status.Err != "" {
@@ -213,10 +275,10 @@ func update(f *Flags, e, t string, printTime bool) {
 		}
 	}
 
-	if f.lastFM {
+	if flags.lastFM {
 		status := &internal.GetLastFMStatus().MusicStatus
 		if status.Ok {
-			e, t = appendMusicInfo(e, t, &s.LastFM.MusicSettings, status)
+			e, t = appendMusicInfo(e, t, &settings.LastFM.MusicSettings, status)
 		} else {
 			notice = "Failed to fetch music information from last.fm"
 			if status.Err != "" {
@@ -230,16 +292,16 @@ func update(f *Flags, e, t string, printTime bool) {
 	changed := updatedCount == 0 || !(t == lastText && e == lastEmoji)
 
 	if changed {
-		if !f.dryRun {
+		if !flags.dryRun {
 			internal.SetSlackUserStatus(t, e)
 		}
 		if notice != "" {
-			if printTime {
+			if flags.watch {
 				red.Fprint(os.Stderr, now)
 			}
 			red.Fprintln(os.Stderr, notice)
 		}
-		if printTime {
+		if flags.watch {
 			cyan.Print(now)
 		}
 		if e != "" {
