@@ -11,7 +11,7 @@ import (
 	"os"
 	"os/exec"
 
-	"bytes"
+	"strings"
 
 	"github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v2"
@@ -57,19 +57,15 @@ func init() {
 	if err != nil {
 		panic("Failed to detect your home directory")
 	}
-	settingsExamplePath = filepath.Join(projectDir, "settings.sample.yml")
 	SettingsPath = filepath.Join(homeDir, ".slack-status.yml")
 
 	_, err = os.Stat(SettingsPath)
 	if err != nil {
-		b, err := ioutil.ReadFile(settingsExamplePath)
-		if err != nil {
-			panic(err)
-		}
+		sample := SettingsSample
 		if runtime.GOOS == "windows" {
-			b = bytes.Replace(b, []byte("\x0A"), []byte("\x0D\x0A"), -1)
+			sample = strings.Replace(sample, "\x0A", "\x0D\x0A", -1)
 		}
-		err = ioutil.WriteFile(SettingsPath, b, 0600)
+		err = ioutil.WriteFile(SettingsPath, []byte(sample), 0600)
 		if err != nil {
 			panic(err)
 		}
