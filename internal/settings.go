@@ -58,7 +58,7 @@ func init() {
 		panic("Failed to detect your home directory")
 	}
 	settingsExamplePath = filepath.Join(projectDir, "settings.sample.yml")
-	SettingsPath = filepath.Join(homeDir, ".slack-status.settings.yml")
+	SettingsPath = filepath.Join(homeDir, ".slack-status.yml")
 
 	_, err = os.Stat(SettingsPath)
 	if err != nil {

@@ -18,7 +18,7 @@ $ go install github.com/townewgokgok/slack-status
 
 # 設定ファイルの編集
 
-設定ファイルは `$HOME/.slack-status.settings.yml` に保存されます。
+設定ファイルは `$HOME/.slack-status.yml` に保存されます。
 
 ```
 $ slack-status -e

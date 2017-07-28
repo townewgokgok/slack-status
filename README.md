@@ -18,7 +18,7 @@ $ go install github.com/townewgokgok/slack-status
 
 # Configure your settings
 
-Your settings file will be saved at `$HOME/.slack-status.settings.yml`.
+Your settings file will be saved at `$HOME/.slack-status.yml`.
 
 Please
 
