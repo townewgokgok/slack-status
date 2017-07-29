@@ -12,7 +12,7 @@ func SetSlackUserStatus(text, emoji string) {
 	}
 }
 
-func GetSlackUserStatus() string {
+func GetSlackUserStatus() (string, string) {
 	api := slack.New(Settings.Slack.Token)
 	res, err := api.AuthTest()
 	if err != nil {
@@ -22,5 +22,5 @@ func GetSlackUserStatus() string {
 	if err != nil {
 		panic("Failed to get status: " + err.Error())
 	}
-	return user.Profile.StatusEmoji + " " + user.Profile.StatusText
+	return user.Profile.StatusEmoji, user.Profile.StatusText
 }

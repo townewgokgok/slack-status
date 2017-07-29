@@ -5,12 +5,8 @@ var SettingsSample = `slack:
   token: xoxp-...
 
 templates:
-  lunch:
-    emoji: fork_and_knife
-    text: Having lunch
-  home:
-    emoji: house
-    text: Working remotely
+  lunch: ':fork_and_knife: Having lunch'
+  home: ':house: Working remotely'
 
 # The settings after here are necessary to obtain music information.
 # You can leave them unchanged unless you use this feature.
@@ -22,13 +18,11 @@ templates:
 
 itunes:
   watch_interval_sec: 3
-  emoji: musical_note
-  format: '%A - %t (from "%a")'
+  format: ':musical_note: %A - %t (from "%a")'
 
 lastfm:
   watch_interval_sec: 15
-  emoji: musical_note
-  format: '%A - %t (from "%a")'
+  format: ':musical_note: %A - %t (from "%a")'
   user_name: ...
   api_key: ...
   secret: ...

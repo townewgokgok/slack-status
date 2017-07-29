@@ -17,14 +17,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type StatusTemplate struct {
-	Emoji string `yaml:"emoji,omitempty"`
-	Text  string `yaml:"text,omitempty"`
-}
-
 type MusicSettings struct {
 	WatchIntervalSec time.Duration `yaml:"watch_interval_sec"`
-	Emoji            string        `yaml:"emoji"`
 	Format           string        `yaml:"format"`
 }
 
@@ -41,18 +35,12 @@ var Settings struct {
 		APIKey        string `yaml:"api_key"`
 		Secret        string `yaml:"secret"`
 	} `yaml:"lastfm,omitempty"`
-	Templates map[string]StatusTemplate `yaml:"templates"`
+	Templates map[string]string `yaml:"templates"`
 }
 
-var projectDir, settingsExamplePath string
 var SettingsPath string
 
 func init() {
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		panic("Failed to detect settings file location")
-	}
-	projectDir = filepath.Dir(filepath.Dir(filename))
 	homeDir, err := homedir.Dir()
 	if err != nil {
 		panic("Failed to detect your home directory")

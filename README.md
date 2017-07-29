@@ -26,15 +26,12 @@ slack:
   token: xoxp-...
 
 templates:
-  home:
-    emoji: house
-    text: Working remotely
-  lunch:
-    emoji: fork_and_knife
-    text: Having lunch
+  home: ':house: Working remotely'
+  lunch: ':fork_and_knife: Having lunch'
 ```
 
-Your `token` can be created at [Slack "Legacy tokens" page](https://api.slack.com/custom-integrations/legacy-tokens).
+- The emoji at the beginning of the template string will be used as the status icon.
+- Your `token` can be created at [Slack "Legacy tokens" page](https://api.slack.com/custom-integrations/legacy-tokens).
 
 # Usage
 

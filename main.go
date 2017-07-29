@@ -24,6 +24,7 @@ import (
 var cyan = color.New(color.FgCyan)
 var yellow = color.New(color.FgYellow)
 var red = color.New(color.FgRed)
+var bggray = color.New(color.BgHiBlack)
 
 func warn(msgs ...string) {
 	for _, msg := range msgs {
@@ -58,7 +59,7 @@ func main() {
 	// Parse arguments
 	app := cli.NewApp()
 	app.Name = "slack-status"
-	app.Version = "1.0.0"
+	app.Version = "0.1.0"
 	app.Usage = "Updates your Slack user status from CLI"
 	//app.Authors = []cli.Author{
 	//	{
@@ -85,7 +86,8 @@ func main() {
 			Usage:     "Shows your current status",
 			ArgsUsage: " ",
 			Action: func(ctx *cli.Context) error {
-				emoji.Println(internal.GetSlackUserStatus())
+				e, t := internal.GetSlackUserStatus()
+				printStatus(e, t)
 				return nil
 			},
 		},
@@ -106,7 +108,7 @@ func main() {
 				sort.Strings(ids)
 				for _, id := range ids {
 					tmpl := internal.Settings.Templates[id]
-					str := fmt.Sprintf("%-"+strconv.Itoa(maxlen)+"s = %s %s", id, wrapEmoji(tmpl.Emoji), tmpl.Text)
+					str := fmt.Sprintf("%-"+strconv.Itoa(maxlen)+"s = %s", id, tmpl)
 					emoji.Fprintln(os.Stderr, str)
 				}
 				return nil
@@ -171,7 +173,7 @@ func main() {
 					os.Exit(1)
 				}
 
-				var t0, e0 string
+				var t0 string
 				if id != "" {
 					tmpl, ok := settings.Templates[id]
 					if !ok {
@@ -180,15 +182,14 @@ func main() {
 							`Try "slack-status list" to list your templates.`,
 						)
 					}
-					t0 = tmpl.Text
-					e0 = wrapEmoji(tmpl.Emoji)
+					t0 = tmpl
 				}
 
-				update(&flags, e0, t0)
+				update(&flags, t0)
 
 				for flags.watch {
 					time.Sleep(interval * time.Second)
-					update(&flags, e0, t0)
+					update(&flags, t0)
 				}
 
 				return nil
@@ -211,25 +212,15 @@ func main() {
 	app.Run(os.Args)
 }
 
-func appendInfo(emoji, text, emojiToAppend, textToAppend string) (string, string) {
-	if emojiToAppend != "" {
-		if emoji == "" {
-			emoji = wrapEmoji(emojiToAppend)
-		} else {
-			if text != "" {
-				text += " "
-			}
-			text += wrapEmoji(emojiToAppend)
-		}
-	}
+func appendInfo(text, textToAppend string) string {
 	if text != "" {
 		text += " "
 	}
 	text += textToAppend
-	return emoji, text
+	return text
 }
 
-func appendMusicInfo(emoji, text string, settings *internal.MusicSettings, status *internal.MusicStatus) (string, string) {
+func appendMusicInfo(text string, settings *internal.MusicSettings, status *internal.MusicStatus) string {
 	r := regexp.MustCompile(`%\w`)
 	info := r.ReplaceAllStringFunc(settings.Format, func(m string) string {
 		switch m[1] {
@@ -244,7 +235,7 @@ func appendMusicInfo(emoji, text string, settings *internal.MusicSettings, statu
 		}
 		return m
 	})
-	return appendInfo(emoji, text, settings.Emoji, info)
+	return appendInfo(text, info)
 }
 
 func limitStringByLength(str string, maxlen int) string {
@@ -255,18 +246,39 @@ func limitStringByLength(str string, maxlen int) string {
 	return string(r[:maxlen-1]) + "…"
 }
 
+var splitEmojiRegexp = regexp.MustCompile(`^:[^: ]+: *`)
+
+func splitEmoji(text string) (string, string) {
+	text = strings.Trim(text, " ")
+	e := ""
+	m := splitEmojiRegexp.FindString(text)
+	if m != "" {
+		e = strings.Trim(m, " ")
+		text = text[len(m):]
+	}
+	return e, text
+}
+
+func printStatus(e, t string) {
+	if e != "" {
+		bggray.Print(emoji.Sprint(e))
+		fmt.Print(" ")
+	}
+	emoji.Println(t)
+}
+
 var lastText string
 var lastEmoji string
 var updatedCount int
 
-func update(flags *Flags, e, t string) {
+func update(flags *Flags, t string) {
 	now := time.Now().Format("[15:04:05] ")
 	notice := ""
 
 	if flags.iTunes {
 		status := &internal.GetITunesStatus().MusicStatus
 		if status.Ok {
-			e, t = appendMusicInfo(e, t, &settings.ITunes.MusicSettings, status)
+			t = appendMusicInfo(t, &settings.ITunes.MusicSettings, status)
 		} else {
 			notice = "iTunes seems to be stopped"
 			if status.Err != "" {
@@ -278,7 +290,7 @@ func update(flags *Flags, e, t string) {
 	if flags.lastFM {
 		status := &internal.GetLastFMStatus().MusicStatus
 		if status.Ok {
-			e, t = appendMusicInfo(e, t, &settings.LastFM.MusicSettings, status)
+			t = appendMusicInfo(t, &settings.LastFM.MusicSettings, status)
 		} else {
 			notice = "Failed to fetch music information from last.fm"
 			if status.Err != "" {
@@ -286,6 +298,8 @@ func update(flags *Flags, e, t string) {
 			}
 		}
 	}
+
+	e, t := splitEmoji(t)
 
 	t = limitStringByLength(t, internal.SlackUserStatusMaxLength)
 
@@ -304,10 +318,7 @@ func update(flags *Flags, e, t string) {
 		if flags.watch {
 			cyan.Print(now)
 		}
-		if e != "" {
-			emoji.Print(e + " ")
-		}
-		emoji.Println(t)
+		printStatus(e, t)
 	}
 
 	lastText = t

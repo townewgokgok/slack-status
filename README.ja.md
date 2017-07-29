@@ -26,15 +26,12 @@ slack:
   token: xoxp-...
 
 templates:
-  home:
-    emoji: house
-    text: 在宅作業中
-  lunch:
-    emoji: fork_and_knife
-    text: お昼ごはん中
+  home: ':house: 在宅作業中'
+  lunch: ':fork_and_knife: お昼ごはん中'
 ```
 
-`token` は [Slackの "Legacy tokens" ページ](https://api.slack.com/custom-integrations/legacy-tokens) で発行することができます。
+- テンプレートの文頭にemojiがあるときは、ステータスアイコンとして使用されます。
+- `token` は [Slackの "Legacy tokens" ページ](https://api.slack.com/custom-integrations/legacy-tokens) で発行することができます。
 
 # 使用方法
 
@@ -54,12 +51,12 @@ templates:
 
 ```
 $ slack-status set home
-🏠 Working remotely
+🏠 在宅作業中
 ```
 
 ```
 $ slack-status set lunch
-🍴 Having lunch
+🍴 お昼ごはん中
 ```
 
 ```
@@ -69,12 +66,12 @@ $ slack-status set -i
 
 ```
 $ slack-status set -i home
-🏠 Working remotely 🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
+🏠 在宅作業中 🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
 ```
 
 ```
 $ slack-status set -i -w home
-[10:25:39] 🏠 Working remotely 🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
-[10:30:16] 🏠 Working remotely 🎵 Satellite Young - Geeky Boyfriend (from "Satellite Young")
-[10:33:51] 🏠 Working remotely 🎵 Satellite Young - AI Threnody (from "Satellite Young")
+[10:25:39] 🏠 在宅作業中 🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
+[10:30:16] 🏠 在宅作業中 🎵 Satellite Young - Geeky Boyfriend (from "Satellite Young")
+[10:33:51] 🏠 在宅作業中 🎵 Satellite Young - AI Threnody (from "Satellite Young")
 ```
