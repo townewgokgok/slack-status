@@ -13,7 +13,7 @@ Also has features to append the music information being played on your iTunes et
 
 ## manually
 
-Download the binary from [the releases page](releases) and move it to a directory in your `PATH` variable.
+Download the binary from [the releases page](../../releases) and move it to a directory in your `PATH` variable.
 
 ## by [Homebrew](https://brew.sh/)
 
