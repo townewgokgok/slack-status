@@ -2,6 +2,9 @@ English | [日本語](README.ja.md)
 
 # slack-status
 
+[![MIT License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
+[![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square)](https://github.com/goreleaser)
+
 Updates your Slack user status from CLI.
 Your own templates can be managed by editting the settings file.
 
