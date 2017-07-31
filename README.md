@@ -8,10 +8,6 @@ English | [日本語](README.ja.md)
 Updates your Slack user status from CLI.
 Your own templates can be managed by editting the settings file.
 
-# Requirements
-
-- [Go 1.8](https://golang.org/)
-
 # Install
 
 ## by [Homebrew](https://brew.sh/)
