@@ -21,6 +21,8 @@ import (
 	"github.com/townewgokgok/slack-status/internal"
 )
 
+var version = "1.0.0"
+
 var cyan = color.New(color.FgCyan)
 var yellow = color.New(color.FgYellow)
 var red = color.New(color.FgRed)
@@ -59,7 +61,7 @@ func main() {
 	// Parse arguments
 	app := cli.NewApp()
 	app.Name = "slack-status"
-	app.Version = "0.1.0"
+	app.Version = version
 	app.Usage = "Updates your Slack user status from CLI"
 	//app.Authors = []cli.Author{
 	//	{
