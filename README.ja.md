@@ -2,6 +2,9 @@
 
 # slack-status
 
+[![MIT License](https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square)](LICENSE)
+[![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square)](https://github.com/goreleaser)
+
 SlackのユーザステータスをCLIから更新するツールです。
 設定ファイルを編集することで、自分専用のテンプレートを管理することができます。
 
