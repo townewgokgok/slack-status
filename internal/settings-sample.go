@@ -17,10 +17,12 @@ templates:
 #   %t : Title
 
 itunes:
+  template_id: itunes
   watch_interval_sec: 3
   format: ':musical_note: %A - %t (from "%a")'
 
 lastfm:
+  template_id: lastfm
   watch_interval_sec: 15
   format: ':musical_note: %A - %t (from "%a")'
   user_name: ...

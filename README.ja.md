@@ -6,9 +6,14 @@
 [![Powered By: GoReleaser](https://img.shields.io/badge/powered%20by-goreleaser-green.svg?style=flat-square)](https://github.com/goreleaser)
 
 SlackのユーザステータスをCLIから更新するツールです。
-設定ファイルを編集することで、自分専用のテンプレートを管理することができます。
+設定ファイルを編集して自分専用のテンプレートを管理することができます。
+iTunes等で再生中の音楽情報を付加する機能も付いています。
 
 # インストール
+
+## 手作業でのインストール
+
+[releases ページ](releases) よりバイナリをダウンロードし、パスの通ったディレクトリに移動してください。
 
 ## [Homebrew](https://brew.sh/) によるインストール
 
@@ -34,7 +39,7 @@ slack:
   token: xoxp-...
 
 templates:
-  home: ':house: 在宅作業中'
+  home: ':house: 本日在宅作業'
   lunch: ':fork_and_knife: お昼ごはん中'
 ```
 
@@ -48,18 +53,20 @@ templates:
 - `slack-status edit` … 設定ファイルをエディタで開きます
 - `slack-status list` … テンプレート一覧を表示します
 - `slack-status get` … 現在のユーザステータスを表示します
-- `slack-status set [options...] [<template ID>]` … ユーザステータスを更新します
-  - `--dryrun`, `-d` … ステータステキストの表示のみ（実際のステータスは変更されません）
-  - `--itunes`, `-i` … iTunes で再生中の音楽情報を付加
-  - `--lastfm`, `-l` … last.fm で再生中の音楽情報を付加
-  - `--watch`, `-w` … 状態変化を監視（`-i` または `-l` と併せて使用）
+- `slack-status set [オプション...] <テンプレートID>...` … ユーザステータスを更新します
+  - **オプション**
+    - `--dryrun`, `-d` … ステータステキストの表示のみ（実際のステータスは変更されません）
+    - `--itunes`, `-i` … iTunes で再生中の音楽情報を付加
+  - **特殊テンプレートID**
+    - `itunes` … appends information about the music playing on iTunes
+    - `lastfm` … appends information about the music scrobbled to last.fm
 - `slack-status help [<command>]` … コマンド一覧 または 指定されたコマンドのヘルプを表示します
 
 # 使用例
 
 ```
 $ slack-status set home
-🏠 在宅作業中
+🏠 本日在宅作業
 ```
 
 ```
@@ -68,18 +75,25 @@ $ slack-status set lunch
 ```
 
 ```
-$ slack-status set -i
+$ slack-status set lunch home
+🍴 お昼ごはん中 🏠 本日在宅作業
+```
+
+↑ `🍴` がemojiアイコンとして使用され、残りがテキストとして設定されます。
+
+```
+$ slack-status set itunes
 🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
 ```
 
 ```
-$ slack-status set -i home
-🏠 在宅作業中 🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
+$ slack-status set home itunes
+🏠 本日在宅作業 🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
 ```
 
 ```
-$ slack-status set -i -w home
-[10:25:39] 🏠 在宅作業中 🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
-[10:30:16] 🏠 在宅作業中 🎵 Satellite Young - Geeky Boyfriend (from "Satellite Young")
-[10:33:51] 🏠 在宅作業中 🎵 Satellite Young - AI Threnody (from "Satellite Young")
+$ slack-status set -w home itunes
+[10:25:39] 🏠 本日在宅作業 🎵 Satellite Young - Break! Break! Tic! Tac! (from "Satellite Young")
+[10:30:16] 🏠 本日在宅作業 🎵 Satellite Young - Geeky Boyfriend (from "Satellite Young")
+[10:33:51] 🏠 本日在宅作業 🎵 Satellite Young - AI Threnody (from "Satellite Young")
 ```

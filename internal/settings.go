@@ -18,6 +18,7 @@ import (
 )
 
 type MusicSettings struct {
+	TemplateID       string        `yaml:"template_id"`
 	WatchIntervalSec time.Duration `yaml:"watch_interval_sec"`
 	Format           string        `yaml:"format"`
 }
@@ -66,6 +67,13 @@ func init() {
 	err = yaml.Unmarshal(data, &Settings)
 	if err != nil {
 		panic("Failed to unmarshall settings: " + err.Error())
+	}
+
+	if Settings.ITunes.TemplateID == "" {
+		Settings.ITunes.TemplateID = "itunes"
+	}
+	if Settings.LastFM.TemplateID == "" {
+		Settings.LastFM.TemplateID = "lastfm"
 	}
 }
 
