@@ -56,7 +56,7 @@ templates:
 - `slack-status set [options...] <template ID>...` … Updates your status
   - **Options**
     - `--dryrun`, `-d` … just print the composed status text (your status will be not changed)
-    - `--watch`, `-w` … watch changes (with `-i` or `-l`)
+    - `--watch`, `-w` … watch changes (with "itunes" or "lastfm" template)
   - **Special template IDs**
     - `itunes` … appends information about the music playing on iTunes
     - `lastfm` … appends information about the music scrobbled to last.fm
