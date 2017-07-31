@@ -14,6 +14,15 @@ Your own templates can be managed by editting the settings file.
 
 # Install
 
+## by [Homebrew](https://brew.sh/)
+
+```
+brew tap townewgokgok/tap
+brew install slack-status
+```
+
+## by [Go 1.8](https://golang.org/)
+
 ```
 go get github.com/townewgokgok/slack-status
 ```
