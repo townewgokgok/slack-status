@@ -56,7 +56,7 @@ templates:
 - `slack-status set [オプション...] <テンプレートID>...` … ユーザステータスを更新します
   - **オプション**
     - `--dryrun`, `-d` … ステータステキストの表示のみ（実際のステータスは変更されません）
-    - `--itunes`, `-i` … iTunes で再生中の音楽情報を付加
+    - `--watch`, `-w` … 状態の変化を監視（`itunes`, `lastfm` テンプレートと併用）
   - **特殊テンプレートID**
     - `itunes` … appends information about the music playing on iTunes
     - `lastfm` … appends information about the music scrobbled to last.fm
