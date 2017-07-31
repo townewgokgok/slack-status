@@ -21,7 +21,7 @@ import (
 	"github.com/townewgokgok/slack-status/internal"
 )
 
-var version = "1.0.0"
+var version = "1.0.1"
 
 var cyan = color.New(color.FgCyan)
 var yellow = color.New(color.FgYellow)

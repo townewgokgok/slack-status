@@ -4,8 +4,10 @@ release:
     owner: townewgokgok
     name: slack-status
 #  draft: true
-#brew:
-#  install: bin.install "slack-status"
+brew:
+  github:
+    owner: townewgokgok
+    name: homebrew-tap
 builds:
 - goos:
 #  - linux
