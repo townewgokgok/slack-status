@@ -14,6 +14,15 @@ SlackのユーザステータスをCLIから更新するツールです。
 
 # インストール
 
+## [Homebrew](https://brew.sh/) によるインストール
+
+```
+brew tap townewgokgok/tap
+brew install slack-status
+```
+
+## [Go 1.8](https://golang.org/) によるインストール
+
 ```
 go get github.com/townewgokgok/slack-status
 ```
