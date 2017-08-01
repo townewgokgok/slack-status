@@ -1,6 +1,6 @@
 package internal
 
-var SettingsSample = `slack:
+var SettingsExample = `slack:
   # Your token can be created at https://api.slack.com/custom-integrations/legacy-tokens
   token: xoxp-...
 
@@ -27,5 +27,4 @@ lastfm:
   format: ':musical_note: %A - %t (from "%a")'
   user_name: ...
   api_key: ...
-  secret: ...
 `

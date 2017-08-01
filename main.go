@@ -30,7 +30,10 @@ var bggray = color.New(color.BgHiBlack)
 
 func warn(msgs ...string) {
 	for _, msg := range msgs {
-		yellow.Fprintln(os.Stderr, `[warning] `+msg)
+		lines := strings.Split(msg, "\n")
+		for _, line := range lines {
+			yellow.Fprintln(os.Stderr, `[warning] `+line)
+		}
 	}
 	fmt.Fprintln(os.Stderr, "")
 }
@@ -53,6 +56,25 @@ var flags Flags
 
 func cliError(msgs ...string) *cli.ExitError {
 	return cli.NewExitError(red.Sprint(strings.Join(msgs, "\n")), 1)
+}
+
+func listTemplates(indent string) string {
+	maxlen := 0
+	ids := []string{}
+	for id := range internal.Settings.Templates {
+		if maxlen < len(id) {
+			maxlen = len(id)
+		}
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	result := ""
+	for _, id := range ids {
+		tmpl := internal.Settings.Templates[id]
+		str := fmt.Sprintf("%s%-"+strconv.Itoa(maxlen)+"s = %s\n", indent, id, tmpl)
+		result += emoji.Sprint(str)
+	}
+	return result
 }
 
 func main() {
@@ -86,7 +108,10 @@ func main() {
 			Usage:     "Shows your current status",
 			ArgsUsage: " ",
 			Action: func(ctx *cli.Context) error {
-				e, t := internal.GetSlackUserStatus()
+				e, t, err := internal.GetSlackUserStatus()
+				if err != nil {
+					return cli.NewExitError(err, 1)
+				}
 				printStatus(e, t)
 				return nil
 			},
@@ -97,33 +122,30 @@ func main() {
 			Usage:     "Lists your templates",
 			ArgsUsage: " ",
 			Action: func(ctx *cli.Context) error {
-				maxlen := 0
-				ids := []string{}
-				for id := range internal.Settings.Templates {
-					if maxlen < len(id) {
-						maxlen = len(id)
-					}
-					ids = append(ids, id)
-				}
-				sort.Strings(ids)
-				for _, id := range ids {
-					tmpl := internal.Settings.Templates[id]
-					str := fmt.Sprintf("%-"+strconv.Itoa(maxlen)+"s = %s", id, tmpl)
-					emoji.Fprintln(os.Stderr, str)
-				}
+				fmt.Print(listTemplates(""))
+				return nil
+			},
+		},
+		{
+			Name:      "example",
+			Aliases:   []string{"x"},
+			Usage:     "Shows an example settings schema",
+			ArgsUsage: " ",
+			Action: func(ctx *cli.Context) error {
+				fmt.Println(internal.SettingsExample)
 				return nil
 			},
 		},
 		{
 			Name:    "set",
 			Aliases: []string{"s"},
-			Usage: "Updates your status\n" +
+			Usage:   "Updates your status",
+			Description: `Template IDs:` + "\n" +
+				listTemplates("     ") +
 				"   \n" +
-				`   The list of your template IDs are displayed by "slack-status list".` + "\n" +
-				"   \n" +
-				`   Some of the special template IDs are predefined:` + "\n" +
-				`      "` + settings.ITunes.TemplateID + `"   appends information about the music playing on iTunes` + "\n" +
-				`      "` + settings.LastFM.TemplateID + `"   appends information about the music scrobbled to last.fm`,
+				`   Special template IDs:` + "\n" +
+				`     ` + settings.ITunes.TemplateID + ` = appends information about the music playing on iTunes` + "\n" +
+				`     ` + settings.LastFM.TemplateID + ` = appends information about the music scrobbled to last.fm`,
 			ArgsUsage: "[<template ID> ...]",
 			Flags: []cli.Flag{
 				cli.BoolFlag{
@@ -177,14 +199,14 @@ func main() {
 
 				err := update(&flags, ids)
 				if err != nil {
-					return err
+					return cli.NewExitError(err, 1)
 				}
 
 				for flags.watch {
 					time.Sleep(interval * time.Second)
 					err = update(&flags, ids)
 					if err != nil {
-						return err
+						warn(err.Error())
 					}
 				}
 
@@ -203,6 +225,15 @@ func main() {
 		}
 		cli.ShowAppHelp(ctx)
 		return nil
+	}
+
+	if 0 < len(internal.SettingsWarnings) {
+		w := append([]string{
+			`Your setting file seems to be corrupted.`,
+			`Try "slack-status example" to show an example settings schema.`,
+			``,
+		}, internal.SettingsWarnings...)
+		warn(w...)
 	}
 
 	app.Run(os.Args)
@@ -314,8 +345,9 @@ func update(flags *Flags, templateIDs []string) error {
 	changed := updatedCount == 0 || !(t == lastText && e == lastEmoji)
 
 	if changed {
+		var err error
 		if !flags.dryRun {
-			internal.SetSlackUserStatus(t, e)
+			err = internal.SetSlackUserStatus(t, e)
 		}
 		if 0 < len(notice) {
 			if flags.watch {
@@ -327,6 +359,9 @@ func update(flags *Flags, templateIDs []string) error {
 			cyan.Print(now)
 		}
 		printStatus(e, t)
+		if err != nil {
+			return err
+		}
 	}
 
 	lastText = t

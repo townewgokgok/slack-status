@@ -34,39 +34,41 @@ var Settings struct {
 		MusicSettings `yaml:",inline"`
 		UserName      string `yaml:"user_name"`
 		APIKey        string `yaml:"api_key"`
-		Secret        string `yaml:"secret"`
 	} `yaml:"lastfm,omitempty"`
 	Templates map[string]string `yaml:"templates"`
 }
 
 var SettingsPath string
+var SettingsWarnings []string
 
 func init() {
+	SettingsWarnings = []string{}
+
 	homeDir, err := homedir.Dir()
 	if err != nil {
-		panic("Failed to detect your home directory")
+		SettingsWarnings = append(SettingsWarnings, "Failed to detect your home directory")
 	}
 	SettingsPath = filepath.Join(homeDir, ".slack-status.yml")
 
 	_, err = os.Stat(SettingsPath)
 	if err != nil {
-		sample := SettingsSample
+		example := SettingsExample
 		if runtime.GOOS == "windows" {
-			sample = strings.Replace(sample, "\x0A", "\x0D\x0A", -1)
+			example = strings.Replace(example, "\x0A", "\x0D\x0A", -1)
 		}
-		err = ioutil.WriteFile(SettingsPath, []byte(sample), 0600)
+		err = ioutil.WriteFile(SettingsPath, []byte(example), 0600)
 		if err != nil {
-			panic(err)
+			SettingsWarnings = append(SettingsWarnings, err.Error())
 		}
 	}
 
 	data, err := ioutil.ReadFile(SettingsPath)
 	if err != nil {
-		panic("Failed to load settings: " + err.Error())
+		SettingsWarnings = append(SettingsWarnings, "Failed to load settings: "+err.Error())
 	}
 	err = yaml.Unmarshal(data, &Settings)
 	if err != nil {
-		panic("Failed to unmarshall settings: " + err.Error())
+		SettingsWarnings = append(SettingsWarnings, "Failed to unmarshall settings: "+err.Error())
 	}
 
 	if Settings.ITunes.TemplateID == "" {

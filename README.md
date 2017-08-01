@@ -60,6 +60,8 @@ templates:
   - **Special template IDs**
     - `itunes` … appends information about the music playing on iTunes
     - `lastfm` … appends information about the music scrobbled to last.fm
+    
+    These IDs can be modified by editting `template_id` in your settings file.
 - `slack-status help [<command>]` … Shows a list of commands or help for one command
 
 # Examples

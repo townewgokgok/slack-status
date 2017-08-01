@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/shkh/lastfm-go/lastfm"
 )
 
@@ -13,8 +14,11 @@ type LastFMStatus struct {
 }
 
 func GetLastFMStatus() *LastFMStatus {
+	spn := spinner.New(spinner.CharSets[14], time.Second/30)
+	spn.Start()
+	defer spn.Stop()
 	s := Settings.LastFM
-	api := lastfm.New(s.APIKey, s.Secret)
+	api := lastfm.New(s.APIKey, "")
 	tracks, err := api.User.GetRecentTracks(lastfm.P{
 		"user": s.UserName,
 	})

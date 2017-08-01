@@ -60,6 +60,8 @@ templates:
   - **特殊テンプレートID**
     - `itunes` … appends information about the music playing on iTunes
     - `lastfm` … appends information about the music scrobbled to last.fm
+    
+    これらのIDは、設定ファイル中の `template_id` を編集して変更することもできます。
 - `slack-status help [<command>]` … コマンド一覧 または 指定されたコマンドのヘルプを表示します
 
 # 使用例
