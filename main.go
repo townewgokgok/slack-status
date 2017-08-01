@@ -21,29 +21,10 @@ import (
 	"github.com/townewgokgok/slack-status/internal"
 )
 
-var version = "1.1.0"
+var version = "1.2.0"
 
 var cyan = color.New(color.FgCyan)
-var yellow = color.New(color.FgYellow)
 var red = color.New(color.FgRed)
-var bggray = color.New(color.BgHiBlack)
-
-func warn(msgs ...string) {
-	for _, msg := range msgs {
-		lines := strings.Split(msg, "\n")
-		for _, line := range lines {
-			yellow.Fprintln(os.Stderr, `[warning] `+line)
-		}
-	}
-	fmt.Fprintln(os.Stderr, "")
-}
-
-func wrapEmoji(e string) string {
-	if e == "" {
-		return e
-	}
-	return ":" + e + ":"
-}
 
 var settings = internal.Settings
 
@@ -80,6 +61,7 @@ func listTemplates(indent string) string {
 func main() {
 	// Parse arguments
 	app := cli.NewApp()
+	app.EnableBashCompletion = true
 	app.Name = "slack-status"
 	app.Version = version
 	app.Usage = "Updates your Slack user status from CLI"
@@ -112,7 +94,7 @@ func main() {
 				if err != nil {
 					return cli.NewExitError(err, 1)
 				}
-				printStatus(e, t)
+				internal.PrintStatus(e, t)
 				return nil
 			},
 		},
@@ -157,6 +139,17 @@ func main() {
 					Usage: `watch changes (with "` + settings.ITunes.TemplateID + `" or "` + settings.LastFM.TemplateID + `" template)`,
 				},
 			},
+			BashComplete: func(c *cli.Context) {
+				ids := []string{
+					settings.ITunes.TemplateID,
+					settings.LastFM.TemplateID,
+				}
+				for id := range internal.Settings.Templates {
+					ids = append(ids, id)
+				}
+				sort.Strings(ids)
+				fmt.Println(strings.Join(ids, "\n"))
+			},
 			Action: func(ctx *cli.Context) error {
 				flags.dryRun = ctx.Bool("dryrun")
 				flags.watch = ctx.Bool("watch")
@@ -170,14 +163,14 @@ func main() {
 						withInfo++
 						interval = settings.ITunes.WatchIntervalSec
 						if interval < 1 {
-							warn(`itunes.watch_interval_sec must be >= 1`)
+							internal.Warn(`itunes.watch_interval_sec must be >= 1`)
 							interval = 5
 						}
 					case settings.LastFM.TemplateID:
 						withInfo++
 						interval = settings.LastFM.WatchIntervalSec
 						if interval < 15 {
-							warn(`lastfm.watch_interval_sec must be >= 15`)
+							internal.Warn(`lastfm.watch_interval_sec must be >= 15`)
 							interval = 15
 						}
 					}
@@ -206,7 +199,7 @@ func main() {
 					time.Sleep(interval * time.Second)
 					err = update(&flags, ids)
 					if err != nil {
-						warn(err.Error())
+						internal.Warn(err.Error())
 					}
 				}
 
@@ -233,7 +226,7 @@ func main() {
 			`Try "slack-status example" to show an example settings schema.`,
 			``,
 		}, internal.SettingsWarnings...)
-		warn(w...)
+		internal.Warn(w...)
 	}
 
 	app.Run(os.Args)
@@ -247,7 +240,7 @@ func appendInfo(text, textToAppend string) string {
 	return text
 }
 
-func appendMusicInfo(settings *internal.MusicSettings, status *internal.MusicStatus) string {
+func MusicInfo(settings *internal.MusicSettings, status *internal.MusicStatus) string {
 	r := regexp.MustCompile(`%\w`)
 	return r.ReplaceAllStringFunc(settings.Format, func(m string) string {
 		switch m[1] {
@@ -262,35 +255,6 @@ func appendMusicInfo(settings *internal.MusicSettings, status *internal.MusicSta
 		}
 		return m
 	})
-}
-
-func limitStringByLength(str string, maxlen int) string {
-	r := []rune(str)
-	if len(r) <= maxlen {
-		return str
-	}
-	return string(r[:maxlen-1]) + "…"
-}
-
-var splitEmojiRegexp = regexp.MustCompile(`^:[^: ]+: *`)
-
-func splitEmoji(text string) (string, string) {
-	text = strings.Trim(text, " ")
-	e := ""
-	m := splitEmojiRegexp.FindString(text)
-	if m != "" {
-		e = strings.Trim(m, " ")
-		text = text[len(m):]
-	}
-	return e, text
-}
-
-func printStatus(e, t string) {
-	if e != "" {
-		bggray.Print(emoji.Sprint(e))
-		fmt.Print(" ")
-	}
-	emoji.Println(t)
 }
 
 var lastText string
@@ -312,7 +276,7 @@ func update(flags *Flags, templateIDs []string) error {
 		case settings.ITunes.TemplateID:
 			status := &internal.GetITunesStatus().MusicStatus
 			if status.Ok {
-				tmpls = append(tmpls, appendMusicInfo(&settings.ITunes.MusicSettings, status))
+				tmpls = append(tmpls, MusicInfo(&settings.ITunes.MusicSettings, status))
 				continue
 			}
 			n := "iTunes seems to be stopped"
@@ -323,7 +287,7 @@ func update(flags *Flags, templateIDs []string) error {
 		case settings.LastFM.TemplateID:
 			status := &internal.GetLastFMStatus().MusicStatus
 			if status.Ok {
-				tmpls = append(tmpls, appendMusicInfo(&settings.LastFM.MusicSettings, status))
+				tmpls = append(tmpls, MusicInfo(&settings.LastFM.MusicSettings, status))
 				continue
 			}
 			n := "Failed to fetch music information from last.fm"
@@ -340,8 +304,8 @@ func update(flags *Flags, templateIDs []string) error {
 	}
 
 	t := strings.Join(tmpls, " ")
-	e, t := splitEmoji(t)
-	t = limitStringByLength(t, internal.SlackUserStatusMaxLength)
+	e, t := internal.SplitEmoji(t)
+	t = internal.LimitStringByLength(t, internal.SlackUserStatusMaxLength)
 	changed := updatedCount == 0 || !(t == lastText && e == lastEmoji)
 
 	if changed {
@@ -358,7 +322,7 @@ func update(flags *Flags, templateIDs []string) error {
 		if flags.watch {
 			cyan.Print(now)
 		}
-		printStatus(e, t)
+		internal.PrintStatus(e, t)
 		if err != nil {
 			return err
 		}

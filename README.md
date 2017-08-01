@@ -99,3 +99,7 @@ $ slack-status set -w home itunes
 [10:30:16] 🏠 Working remotely today 🎵 Satellite Young - Geeky Boyfriend (from "Satellite Young")
 [10:33:51] 🏠 Working remotely today 🎵 Satellite Young - AI Threnody (from "Satellite Young")
 ```
+
+# bash_complete support
+
+Move `bash_complete` included in the distribution to somewhere and `source` it in your `.bashrc`.

@@ -29,6 +29,7 @@ archive:
   name_template: '{{ .Binary }}_{{.Version}}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{
     .Arm }}{{ end }}'
   files:
+  - bash_complete
   - LICENSE*
   - README*
   - CHANGELOG*

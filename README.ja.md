@@ -99,3 +99,7 @@ $ slack-status set -w home itunes
 [10:30:16] 🏠 本日在宅作業 🎵 Satellite Young - Geeky Boyfriend (from "Satellite Young")
 [10:33:51] 🏠 本日在宅作業 🎵 Satellite Young - AI Threnody (from "Satellite Young")
 ```
+
+# bash_complete サポート
+
+配布物に含まれている `bash_complete` をどこかに移動し、 `.bashrc` 中で `source` してください。
