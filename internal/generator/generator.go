@@ -1,48 +1,69 @@
 package generator
 
 import (
-	"regexp"
-	"time"
+	"fmt"
+	"strings"
+
+	"github.com/townewgokgok/slack-status/internal/helper"
+	"github.com/townewgokgok/slack-status/internal/music"
+	s "github.com/townewgokgok/slack-status/internal/settings"
 )
 
-type Replacer func(string) (string, bool)
+func generateByTemplate(tmplID string) (string, string) {
+	tmpl, ok := s.Settings.Templates[tmplID]
+	rep := newReplacerChain()
 
-type Generator struct {
-	replacers []Replacer
-}
-
-func NewGenerator() *Generator {
-	return &Generator{
-		replacers: []Replacer{},
-	}
-}
-
-func (g *Generator) AddReplacer(replacer Replacer) {
-	g.replacers = append(g.replacers, replacer)
-}
-
-func defaultReplacer(m string) (string, bool) {
-	switch m {
-	case "%F":
-		return time.Now().Format("2006/01/02"), true
-	case "%T":
-		return time.Now().Format("15:04:05"), true
-	case "%%":
-		return "%", true
-	}
-	return "", false
-}
-
-var placeholderRegexp = regexp.MustCompile(`%\w`)
-
-func (g *Generator) Execute(tmpl string) string {
-	return placeholderRegexp.ReplaceAllStringFunc(tmpl, func(m string) string {
-		for _, replacer := range append(g.replacers, defaultReplacer) {
-			r, ok := replacer(m)
-			if ok {
-				return r
+	if !ok {
+		switch tmplID {
+		case s.Settings.ITunes.TemplateID:
+			status := &music.GetITunesStatus().MusicStatus
+			if !status.Ok {
+				n := "iTunes seems to be stopped"
+				if status.Err != "" {
+					n += " : " + status.Err
+				}
+				return "", n
 			}
+			rep.AddReplacer(status.Replacer)
+			tmpl = s.Settings.ITunes.MusicSettings.Format
+		case s.Settings.LastFM.TemplateID:
+			status := &music.GetLastFMStatus(s.Settings.LastFM.APIKey, s.Settings.LastFM.UserName).MusicStatus
+			if !status.Ok {
+				n := "Failed to fetch music information from last.fm"
+				if status.Err != "" {
+					n += " : " + status.Err
+				}
+				return "", n
+			}
+			rep.AddReplacer(status.Replacer)
+			tmpl = s.Settings.LastFM.MusicSettings.Format
+		default:
+			return "", ""
 		}
-		return m
-	})
+	}
+
+	return rep.execute(tmpl), ""
+}
+
+func Generate(templateIDs []string) (string, string, []string, error) {
+	notice := []string{}
+	texts := []string{}
+
+	for _, id := range templateIDs {
+		t, n := generateByTemplate(id)
+		if n != "" {
+			notice = append(notice, n)
+		}
+		if t == "" {
+			return "", "", notice, fmt.Errorf(
+				`Template "%s" is not defined in settings file.`+"\n"+
+					`Try "slack-status list" to list your templates.`,
+				id,
+			)
+		}
+		texts = append(texts, t)
+	}
+
+	emj, txt := helper.SplitEmoji(strings.Join(texts, " "))
+	return emj, txt, notice, nil
 }

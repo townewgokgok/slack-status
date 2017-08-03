@@ -6,7 +6,7 @@ import (
 	"github.com/briandowns/spinner"
 	"github.com/nlopes/slack"
 	"github.com/pkg/errors"
-	"github.com/townewgokgok/slack-status/internal/settings"
+	s "github.com/townewgokgok/slack-status/internal/settings"
 )
 
 const SlackUserStatusMaxLength = 100
@@ -15,7 +15,7 @@ func SetSlackUserStatus(text, emoji string) error {
 	spn := spinner.New(spinner.CharSets[14], time.Second/30)
 	spn.Start()
 	defer spn.Stop()
-	api := slack.New(settings.Settings.Slack.Token)
+	api := slack.New(s.Settings.Slack.Token)
 	err := api.SetUserCustomStatus(text, emoji)
 	if err != nil {
 		return errors.Wrap(err, "Failed to update status")
@@ -24,7 +24,7 @@ func SetSlackUserStatus(text, emoji string) error {
 }
 
 func GetSlackUserStatus() (string, string, error) {
-	api := slack.New(settings.Settings.Slack.Token)
+	api := slack.New(s.Settings.Slack.Token)
 	res, err := api.AuthTest()
 	if err != nil {
 		return "", "", errors.Wrap(err, "Failed to get status")

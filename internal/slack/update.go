@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/townewgokgok/slack-status/internal/generator"
 	"github.com/townewgokgok/slack-status/internal/helper"
-	s "github.com/townewgokgok/slack-status/internal/settings"
 )
 
 var lastText string
@@ -16,7 +16,7 @@ var updatedCount int
 func Update(watch, dryRun bool, templateIDs []string) error {
 	now := time.Now().Format("[15:04:05] ")
 
-	emj, txt, notice, err := s.Generate(templateIDs)
+	emj, txt, notice, err := generator.Generate(templateIDs)
 	if err != nil {
 		return err
 	}
