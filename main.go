@@ -11,20 +11,18 @@ import (
 
 	"strings"
 
-	"regexp"
-
 	"sort"
 
 	"github.com/fatih/color"
 	"github.com/townewgokgok/slack-status/internal"
+	"github.com/townewgokgok/slack-status/internal/music"
+	s "github.com/townewgokgok/slack-status/internal/settings"
 )
 
 var version = "1.2.0"
 
 var cyan = color.New(color.FgCyan)
 var red = color.New(color.FgRed)
-
-var settings = internal.Settings
 
 type Flags struct {
 	dryRun bool
@@ -59,7 +57,7 @@ func main() {
 			Usage:     "Opens your settings file in the editor",
 			ArgsUsage: " ",
 			Action: func(ctx *cli.Context) error {
-				internal.Edit()
+				s.Edit()
 				return nil
 			},
 		},
@@ -83,7 +81,7 @@ func main() {
 			Usage:     "Lists your templates",
 			ArgsUsage: " ",
 			Action: func(ctx *cli.Context) error {
-				fmt.Print(internal.ListTemplates(""))
+				fmt.Print(s.Settings.Templates.Dump(""))
 				return nil
 			},
 		},
@@ -93,7 +91,7 @@ func main() {
 			Usage:     "Shows an example settings schema",
 			ArgsUsage: " ",
 			Action: func(ctx *cli.Context) error {
-				fmt.Println(internal.SettingsExample)
+				fmt.Println(s.SettingsExample)
 				return nil
 			},
 		},
@@ -102,11 +100,11 @@ func main() {
 			Aliases: []string{"s"},
 			Usage:   "Updates your status",
 			Description: `Template IDs:` + "\n" +
-				internal.ListTemplates("     ") +
+				s.Settings.Templates.Dump("     ") +
 				"   \n" +
 				`   Special template IDs:` + "\n" +
-				`     ` + settings.ITunes.TemplateID + ` = appends information about the music playing on iTunes` + "\n" +
-				`     ` + settings.LastFM.TemplateID + ` = appends information about the music scrobbled to last.fm`,
+				`     ` + s.Settings.ITunes.TemplateID + ` = appends information about the music playing on iTunes` + "\n" +
+				`     ` + s.Settings.LastFM.TemplateID + ` = appends information about the music scrobbled to last.fm`,
 			ArgsUsage: "[<template ID> ...]",
 			Flags: []cli.Flag{
 				cli.BoolFlag{
@@ -115,15 +113,15 @@ func main() {
 				},
 				cli.BoolFlag{
 					Name:  "watch, w",
-					Usage: `watch changes (with "` + settings.ITunes.TemplateID + `" or "` + settings.LastFM.TemplateID + `" template)`,
+					Usage: `watch changes (with "` + s.Settings.ITunes.TemplateID + `" or "` + s.Settings.LastFM.TemplateID + `" template)`,
 				},
 			},
 			BashComplete: func(c *cli.Context) {
 				ids := []string{
-					settings.ITunes.TemplateID,
-					settings.LastFM.TemplateID,
+					s.Settings.ITunes.TemplateID,
+					s.Settings.LastFM.TemplateID,
 				}
-				for id := range internal.Settings.Templates {
+				for id := range s.Settings.Templates {
 					ids = append(ids, id)
 				}
 				sort.Strings(ids)
@@ -138,16 +136,16 @@ func main() {
 				interval := time.Duration(30)
 				for _, id := range ids {
 					switch id {
-					case settings.ITunes.TemplateID:
+					case s.Settings.ITunes.TemplateID:
 						withInfo++
-						interval = settings.ITunes.WatchIntervalSec
+						interval = s.Settings.ITunes.WatchIntervalSec
 						if interval < 1 {
 							internal.Warn(`itunes.watch_interval_sec must be >= 1`)
 							interval = 5
 						}
-					case settings.LastFM.TemplateID:
+					case s.Settings.LastFM.TemplateID:
 						withInfo++
-						interval = settings.LastFM.WatchIntervalSec
+						interval = s.Settings.LastFM.WatchIntervalSec
 						if interval < 15 {
 							internal.Warn(`lastfm.watch_interval_sec must be >= 15`)
 							interval = 15
@@ -157,8 +155,8 @@ func main() {
 				if 1 < withInfo {
 					return cliError(fmt.Sprintf(
 						`Both "%s" and "%s" cannot be specified at the same time.`,
-						settings.ITunes.TemplateID,
-						settings.LastFM.TemplateID,
+						s.Settings.ITunes.TemplateID,
+						s.Settings.LastFM.TemplateID,
 					))
 				}
 				if withInfo == 0 {
@@ -188,10 +186,10 @@ func main() {
 	}
 
 	app.Action = func(ctx *cli.Context) error {
-		if settings.Slack.Token == "" || strings.ContainsRune(settings.Slack.Token, '.') {
+		if s.Settings.Slack.Token == "" || strings.ContainsRune(s.Settings.Slack.Token, '.') {
 			return cliError(
 				`Your settings file seems to be not configured correctly.`,
-				`The example settings file has been created at `+internal.SettingsPath,
+				`The example settings file has been created at `+s.SettingsPath,
 				`Try "slack-status edit" to edit it.`,
 			)
 		}
@@ -199,33 +197,16 @@ func main() {
 		return nil
 	}
 
-	if 0 < len(internal.SettingsWarnings) {
+	if 0 < len(s.SettingsWarnings) {
 		w := append([]string{
 			`Your setting file seems to be corrupted.`,
 			`Try "slack-status example" to show an example settings schema.`,
 			``,
-		}, internal.SettingsWarnings...)
+		}, s.SettingsWarnings...)
 		internal.Warn(w...)
 	}
 
 	app.Run(os.Args)
-}
-
-func MusicInfo(settings *internal.MusicSettings, status *internal.MusicStatus) string {
-	r := regexp.MustCompile(`%\w`)
-	return r.ReplaceAllStringFunc(settings.Format, func(m string) string {
-		switch m[1] {
-		case 'A':
-			return status.Artist
-		case 'a':
-			return status.Album
-		case 't':
-			return status.Title
-		case '%':
-			return "%"
-		}
-		return m
-	})
 }
 
 var lastText string
@@ -238,16 +219,16 @@ func update(flags *Flags, templateIDs []string) error {
 
 	tmpls := []string{}
 	for _, id := range templateIDs {
-		tmpl, ok := settings.Templates[id]
+		tmpl, ok := s.Settings.Templates[id]
 		if ok {
 			tmpls = append(tmpls, tmpl)
 			continue
 		}
 		switch id {
-		case settings.ITunes.TemplateID:
-			status := &internal.GetITunesStatus().MusicStatus
+		case s.Settings.ITunes.TemplateID:
+			status := &music.GetITunesStatus().MusicStatus
 			if status.Ok {
-				tmpls = append(tmpls, MusicInfo(&settings.ITunes.MusicSettings, status))
+				tmpls = append(tmpls, s.Settings.ITunes.MusicSettings.ReplacePlaceholder(status))
 				continue
 			}
 			n := "iTunes seems to be stopped"
@@ -255,10 +236,10 @@ func update(flags *Flags, templateIDs []string) error {
 				n += " : " + status.Err
 			}
 			notice = append(notice, n)
-		case settings.LastFM.TemplateID:
-			status := &internal.GetLastFMStatus().MusicStatus
+		case s.Settings.LastFM.TemplateID:
+			status := &music.GetLastFMStatus(s.Settings.LastFM.APIKey, s.Settings.LastFM.UserName).MusicStatus
 			if status.Ok {
-				tmpls = append(tmpls, MusicInfo(&settings.LastFM.MusicSettings, status))
+				tmpls = append(tmpls, s.Settings.LastFM.MusicSettings.ReplacePlaceholder(status))
 				continue
 			}
 			n := "Failed to fetch music information from last.fm"

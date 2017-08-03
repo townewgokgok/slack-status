@@ -1,12 +1,10 @@
-package internal
+package settings
 
 import (
 	"io/ioutil"
 
 	"path/filepath"
 	"runtime"
-
-	"time"
 
 	"os"
 	"os/exec"
@@ -15,31 +13,13 @@ import (
 
 	"github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v2"
-	"sort"
-	"fmt"
-	"strconv"
-	"github.com/kyokomi/emoji"
 )
 
-type MusicSettings struct {
-	TemplateID       string        `yaml:"template_id"`
-	WatchIntervalSec time.Duration `yaml:"watch_interval_sec"`
-	Format           string        `yaml:"format"`
-}
-
 var Settings struct {
-	Slack struct {
-		Token string `yaml:"token"`
-	} `yaml:"slack"`
-	ITunes struct {
-		MusicSettings `yaml:",inline"`
-	} `yaml:"itunes,omitempty"`
-	LastFM struct {
-		MusicSettings `yaml:",inline"`
-		UserName      string `yaml:"user_name"`
-		APIKey        string `yaml:"api_key"`
-	} `yaml:"lastfm,omitempty"`
-	Templates map[string]string `yaml:"templates"`
+	Slack     SlackSettings    `yaml:"slack"`
+	Templates TemplateSettings `yaml:"templates"`
+	ITunes    ITunesSettings   `yaml:"itunes,omitempty"`
+	LastFM    LastFMSettings   `yaml:"lastfm,omitempty"`
 }
 
 var SettingsPath string
@@ -98,23 +78,4 @@ func Edit() {
 		panic(err)
 	}
 	os.Exit(0)
-}
-
-func ListTemplates(indent string) string {
-	maxlen := 0
-	ids := []string{}
-	for id := range Settings.Templates {
-		if maxlen < len(id) {
-			maxlen = len(id)
-		}
-		ids = append(ids, id)
-	}
-	sort.Strings(ids)
-	result := ""
-	for _, id := range ids {
-		tmpl := Settings.Templates[id]
-		str := fmt.Sprintf("%s%-"+strconv.Itoa(maxlen)+"s = %s\n", indent, id, tmpl)
-		result += emoji.Sprint(str)
-	}
-	return result
 }

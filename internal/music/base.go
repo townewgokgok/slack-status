@@ -1,4 +1,4 @@
-package internal
+package music
 
 type MusicStatus struct {
 	Ok     bool

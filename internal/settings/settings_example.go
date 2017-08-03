@@ -1,4 +1,4 @@
-package internal
+package settings
 
 var SettingsExample = `slack:
   # Your token can be created at https://api.slack.com/custom-integrations/legacy-tokens

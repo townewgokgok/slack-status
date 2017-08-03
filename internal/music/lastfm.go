@@ -1,4 +1,4 @@
-package internal
+package music
 
 import (
 	"strconv"
@@ -13,14 +13,13 @@ type LastFMStatus struct {
 	Date time.Time
 }
 
-func GetLastFMStatus() *LastFMStatus {
+func GetLastFMStatus(apikey, username string) *LastFMStatus {
 	spn := spinner.New(spinner.CharSets[14], time.Second/30)
 	spn.Start()
 	defer spn.Stop()
-	s := Settings.LastFM
-	api := lastfm.New(s.APIKey, "")
+	api := lastfm.New(apikey, "")
 	tracks, err := api.User.GetRecentTracks(lastfm.P{
-		"user": s.UserName,
+		"user": username,
 	})
 	if err != nil {
 		return &LastFMStatus{

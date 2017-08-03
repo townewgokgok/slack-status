@@ -1,15 +1,11 @@
-package internal
+package music
 
 import (
-	"bytes"
-	"io/ioutil"
 	"os/exec"
 	"runtime"
-	"strconv"
 	"strings"
 
-	"golang.org/x/text/encoding/japanese"
-	"golang.org/x/text/transform"
+	"github.com/townewgokgok/slack-status/internal/helper"
 )
 
 type ITunesStatus struct {
@@ -18,23 +14,6 @@ type ITunesStatus struct {
 	Duration float64
 	Start    float64
 	Finish   float64
-}
-
-func parseFloat64(str string) float64 {
-	val, err := strconv.ParseFloat(str, 64)
-	if err != nil {
-		return .0
-	}
-	return val
-}
-
-func convertFromShiftJIS(sjis []byte) (string, error) {
-	reader := transform.NewReader(bytes.NewReader(sjis), japanese.ShiftJIS.NewDecoder())
-	utf8, err := ioutil.ReadAll(reader)
-	if err != nil {
-		return "", err
-	}
-	return string(utf8), nil
 }
 
 func GetITunesStatus() *ITunesStatus {
@@ -58,10 +37,10 @@ func GetITunesStatus() *ITunesStatus {
 			Album:  values[5],
 			Title:  values[6],
 		},
-		Position: parseFloat64(values[0]),
-		Duration: parseFloat64(values[1]),
-		Start:    parseFloat64(values[2]),
-		Finish:   parseFloat64(values[3]),
+		Position: helper.ParseFloat64(values[0]),
+		Duration: helper.ParseFloat64(values[1]),
+		Start:    helper.ParseFloat64(values[2]),
+		Finish:   helper.ParseFloat64(values[3]),
 	}
 }
 
@@ -82,7 +61,7 @@ func getITunesStatusForWindows() string {
 	if err != nil {
 		return ""
 	}
-	tsv, err := convertFromShiftJIS(sjis)
+	tsv, err := helper.ConvertFromShiftJIS(sjis)
 	if err != nil {
 		return ""
 	}
