@@ -9,7 +9,7 @@ import (
 	s "github.com/townewgokgok/slack-status/internal/settings"
 )
 
-func generateByTemplate(tmplID string) (string, string) {
+func generateByTemplate(tmplID string) (string, string, bool) {
 	tmpl, ok := s.Settings.Templates[tmplID]
 	rep := newReplacerChain()
 
@@ -22,7 +22,7 @@ func generateByTemplate(tmplID string) (string, string) {
 				if status.Err != "" {
 					n += " : " + status.Err
 				}
-				return "", n
+				return "", n, true
 			}
 			rep.AddReplacer(status.Replacer)
 			tmpl = s.Settings.ITunes.MusicSettings.Format
@@ -33,16 +33,16 @@ func generateByTemplate(tmplID string) (string, string) {
 				if status.Err != "" {
 					n += " : " + status.Err
 				}
-				return "", n
+				return "", n, true
 			}
 			rep.AddReplacer(status.Replacer)
 			tmpl = s.Settings.LastFM.MusicSettings.Format
 		default:
-			return "", ""
+			return "", "", false
 		}
 	}
 
-	return rep.execute(tmpl), ""
+	return rep.execute(tmpl), "", true
 }
 
 func Generate(templateIDs []string) (string, string, []string, error) {
@@ -50,18 +50,20 @@ func Generate(templateIDs []string) (string, string, []string, error) {
 	texts := []string{}
 
 	for _, id := range templateIDs {
-		t, n := generateByTemplate(id)
+		t, n, ok := generateByTemplate(id)
 		if n != "" {
 			notice = append(notice, n)
 		}
-		if t == "" {
+		if !ok {
 			return "", "", notice, fmt.Errorf(
 				`Template "%s" is not defined in settings file.`+"\n"+
 					`Try "slack-status list" to list your templates.`,
 				id,
 			)
 		}
-		texts = append(texts, t)
+		if t != "" {
+			texts = append(texts, t)
+		}
 	}
 
 	emj, txt := helper.SplitEmoji(strings.Join(texts, " "))
