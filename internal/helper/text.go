@@ -1,15 +1,36 @@
-package internal
+package helper
 
 import (
 	"fmt"
 	"regexp"
 	"strings"
 
-	"os"
-
-	"github.com/fatih/color"
 	"github.com/kyokomi/emoji"
+	"golang.org/x/text/encoding/japanese"
+
+	"bytes"
+	"io/ioutil"
+	"strconv"
+
+	"golang.org/x/text/transform"
 )
+
+func ParseFloat64(str string) float64 {
+	val, err := strconv.ParseFloat(str, 64)
+	if err != nil {
+		return .0
+	}
+	return val
+}
+
+func ConvertFromShiftJIS(sjis []byte) (string, error) {
+	reader := transform.NewReader(bytes.NewReader(sjis), japanese.ShiftJIS.NewDecoder())
+	utf8, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return "", err
+	}
+	return string(utf8), nil
+}
 
 func WrapEmoji(e string) string {
 	if e == "" {
@@ -39,24 +60,10 @@ func SplitEmoji(text string) (string, string) {
 	return e, text
 }
 
-var bggray = color.New(color.BgHiBlack)
-
 func PrintStatus(e, t string) {
 	if e != "" {
-		bggray.Print(emoji.Sprint(e))
+		BgHiBlack.Print(emoji.Sprint(e))
 		fmt.Print(" ")
 	}
 	emoji.Println(t)
-}
-
-var yellow = color.New(color.FgYellow)
-
-func Warn(msgs ...string) {
-	for _, msg := range msgs {
-		lines := strings.Split(msg, "\n")
-		for _, line := range lines {
-			yellow.Fprintln(os.Stderr, `[warning] `+line)
-		}
-	}
-	fmt.Fprintln(os.Stderr, "")
 }
