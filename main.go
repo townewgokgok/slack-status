@@ -14,10 +14,8 @@ import (
 	"regexp"
 
 	"sort"
-	"strconv"
 
 	"github.com/fatih/color"
-	"github.com/kyokomi/emoji"
 	"github.com/townewgokgok/slack-status/internal"
 )
 
@@ -37,25 +35,6 @@ var flags Flags
 
 func cliError(msgs ...string) *cli.ExitError {
 	return cli.NewExitError(red.Sprint(strings.Join(msgs, "\n")), 1)
-}
-
-func listTemplates(indent string) string {
-	maxlen := 0
-	ids := []string{}
-	for id := range internal.Settings.Templates {
-		if maxlen < len(id) {
-			maxlen = len(id)
-		}
-		ids = append(ids, id)
-	}
-	sort.Strings(ids)
-	result := ""
-	for _, id := range ids {
-		tmpl := internal.Settings.Templates[id]
-		str := fmt.Sprintf("%s%-"+strconv.Itoa(maxlen)+"s = %s\n", indent, id, tmpl)
-		result += emoji.Sprint(str)
-	}
-	return result
 }
 
 func main() {
@@ -104,7 +83,7 @@ func main() {
 			Usage:     "Lists your templates",
 			ArgsUsage: " ",
 			Action: func(ctx *cli.Context) error {
-				fmt.Print(listTemplates(""))
+				fmt.Print(internal.ListTemplates(""))
 				return nil
 			},
 		},
@@ -123,7 +102,7 @@ func main() {
 			Aliases: []string{"s"},
 			Usage:   "Updates your status",
 			Description: `Template IDs:` + "\n" +
-				listTemplates("     ") +
+				internal.ListTemplates("     ") +
 				"   \n" +
 				`   Special template IDs:` + "\n" +
 				`     ` + settings.ITunes.TemplateID + ` = appends information about the music playing on iTunes` + "\n" +
@@ -230,14 +209,6 @@ func main() {
 	}
 
 	app.Run(os.Args)
-}
-
-func appendInfo(text, textToAppend string) string {
-	if text != "" {
-		text += " "
-	}
-	text += textToAppend
-	return text
 }
 
 func MusicInfo(settings *internal.MusicSettings, status *internal.MusicStatus) string {

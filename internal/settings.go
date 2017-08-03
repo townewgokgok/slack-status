@@ -15,6 +15,10 @@ import (
 
 	"github.com/mitchellh/go-homedir"
 	"gopkg.in/yaml.v2"
+	"sort"
+	"fmt"
+	"strconv"
+	"github.com/kyokomi/emoji"
 )
 
 type MusicSettings struct {
@@ -94,4 +98,23 @@ func Edit() {
 		panic(err)
 	}
 	os.Exit(0)
+}
+
+func ListTemplates(indent string) string {
+	maxlen := 0
+	ids := []string{}
+	for id := range Settings.Templates {
+		if maxlen < len(id) {
+			maxlen = len(id)
+		}
+		ids = append(ids, id)
+	}
+	sort.Strings(ids)
+	result := ""
+	for _, id := range ids {
+		tmpl := Settings.Templates[id]
+		str := fmt.Sprintf("%s%-"+strconv.Itoa(maxlen)+"s = %s\n", indent, id, tmpl)
+		result += emoji.Sprint(str)
+	}
+	return result
 }
