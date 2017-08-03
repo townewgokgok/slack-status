@@ -7,10 +7,8 @@ import (
 
 	"strings"
 
-	"regexp"
-	"time"
-
 	"github.com/kyokomi/emoji"
+	"github.com/townewgokgok/slack-status/internal/generator"
 	"github.com/townewgokgok/slack-status/internal/helper"
 	"github.com/townewgokgok/slack-status/internal/music"
 )
@@ -36,23 +34,9 @@ func (s TemplateSettings) Dump(indent string) string {
 	return result
 }
 
-var placeholderRegexp = regexp.MustCompile(`%\w`)
-
-func defaultReplacer(m string) (string, bool) {
-	switch m {
-	case "%F":
-		return time.Now().Format("2006/01/02"), true
-	case "%T":
-		return time.Now().Format("15:04:05"), true
-	case "%%":
-		return "%", true
-	}
-	return "", false
-}
-
 func generateByTemplate(tmplID string) (string, string) {
 	tmpl, ok := Settings.Templates[tmplID]
-	replacers := []func(string) (string, bool){}
+	gen := generator.NewGenerator()
 
 	if !ok {
 		switch tmplID {
@@ -65,7 +49,7 @@ func generateByTemplate(tmplID string) (string, string) {
 				}
 				return "", n
 			}
-			replacers = append(replacers, status.Replacer)
+			gen.AddReplacer(status.Replacer)
 			tmpl = Settings.ITunes.MusicSettings.Format
 		case Settings.LastFM.TemplateID:
 			status := &music.GetLastFMStatus(Settings.LastFM.APIKey, Settings.LastFM.UserName).MusicStatus
@@ -76,24 +60,14 @@ func generateByTemplate(tmplID string) (string, string) {
 				}
 				return "", n
 			}
-			replacers = append(replacers, status.Replacer)
+			gen.AddReplacer(status.Replacer)
 			tmpl = Settings.LastFM.MusicSettings.Format
 		default:
 			return "", ""
 		}
 	}
 
-	replacers = append(replacers, defaultReplacer)
-
-	return placeholderRegexp.ReplaceAllStringFunc(tmpl, func(m string) string {
-		for _, replacer := range replacers {
-			r, ok := replacer(m)
-			if ok {
-				return r
-			}
-		}
-		return m
-	}), ""
+	return gen.Execute(tmpl), ""
 }
 
 func Generate(templateIDs []string) (string, string, []string, error) {
