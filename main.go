@@ -18,7 +18,7 @@ import (
 	"github.com/townewgokgok/slack-status/internal/slack"
 )
 
-var version = "1.2.0"
+var version = "1.2.1"
 
 func cliError(msgs ...string) *cli.ExitError {
 	return cli.NewExitError(helper.Red.Sprint(strings.Join(msgs, "\n")), 1)

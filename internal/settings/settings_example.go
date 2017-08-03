@@ -4,6 +4,10 @@ var SettingsExample = `slack:
   # Your token can be created at https://api.slack.com/custom-integrations/legacy-tokens
   token: xoxp-...
 
+# Template format placeholders:
+#   %F : Today in format "2016/01/02"
+#   %T : Now time in format "15:03:04"
+
 templates:
   lunch: ':fork_and_knife: Having lunch'
   home: ':house: Working remotely'
@@ -11,7 +15,7 @@ templates:
 # The settings after here are necessary to obtain music information.
 # You can leave them unchanged unless you use this feature.
 #
-# Format placeholders:
+# Extended format placeholders:
 #   %A : Artist
 #   %a : Album
 #   %t : Title
